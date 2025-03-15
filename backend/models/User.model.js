@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 const { Schema, model } = mongoose;
 
@@ -17,10 +18,10 @@ const userSchema = new Schema(
       unique: true,
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address."],
     },
-    passwordHash: {
+    password: {
       type: String,
       required: [true, "password is required."],
-      minlength: [8, "Password must be at least 8 characters"]
+      minlength: [8, "Password must be at least 8 characters"],
     },
     role: {
       type: String,
@@ -49,6 +50,19 @@ const userSchema = new Schema(
     timestamps: true,
   }
 );
+
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+
+  try {
+    // Hash password
+    const saltRounds = 10;
+    this.password = await bcrypt.hash(this.password, saltRounds);
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+});
 
 const User = model("User", userSchema);
 
