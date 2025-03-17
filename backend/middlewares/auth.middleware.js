@@ -2,69 +2,40 @@ import User from "../models/User.model.js";
 import jwt from "jsonwebtoken";
 import { handleError } from "../utils/error.handler.js";
 
-const verifyTokenAndFetchUser = async (token) => {
+const verifyToken = (token) => {
   if (!token) {
-    const error = new Error("Access token not provided.");
-    error.status = 401; // Unauthorized
-    throw error;
+    throw { message: "Access token not provided.", status: 400 };
   }
 
   let decoded;
   try {
     decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
   } catch (err) {
-    const error = new Error("Invalid or expired access token.");
-    error.status = 401; // Unauthorized
-    throw error;
+    console.log(err);
+    throw { message: err.message, status: 400 };
   }
 
-  const user = await User.findById({ _id: decoded.userId }).select("-password");
-  if (!user) {
-    const error = new Error("User not found.");
-    error.status = 404; // Not Found
-    throw error;
-  }
-
-  return user;
+  return decoded;
 };
 
-export const protectedRoute = async (req, res, next) => {
+export const authenticate = (req, res, next) => {
   try {
     const accessToken = req.cookies.accessToken;
-    const user = await verifyTokenAndFetchUser(accessToken);
+    const user = verifyToken(accessToken);
 
     req.user = user;
     next();
   } catch (error) {
-    console.error("Error in protectedRoute middleware:", error);
+    console.error("Error authenticating user: ", error);
     handleError(res, error);
   }
 };
 
-export const orphanageRoute = async (req, res, next) => {
-  try {
-    if (req.user.role !== "orphanage") {
-      const error = new Error("Access denied - orphanage only!");
-      error.status = 403; // Forbidden
-      throw error;
+export const authorize = (roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      handleError(res, { status: 403, message: "Forbidden: Accesss Denied." });
     }
     next();
-  } catch (error) {
-    console.error("Error in orphanageRoute middleware:", error);
-    handleError(res, error);
-  }
-};
-
-export const adminRoute = async (req, res, next) => {
-  try {
-    if (req.user.role !== "admin") {
-      const error = new Error("Access denied - admin only!");
-      error.status = 403; // Forbidden
-      throw error;
-    }
-    next();
-  } catch (error) {
-    console.error("Error in adminRoute middleware:", error);
-    handleError(res, error);
-  }
+  };
 };

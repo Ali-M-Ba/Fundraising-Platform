@@ -12,7 +12,10 @@ export const processSignup = async (req, res) => {
     const newUser = new User(credentials);
     const savedUser = await newUser.save();
 
-    const { accessToken, refreshToken } = generateTokens(savedUser._id);
+    const { accessToken, refreshToken } = generateTokens(
+      savedUser._id,
+      savedUser.role
+    );
 
     const newToken = new RefreshToken({
       userId: savedUser._id,
@@ -67,13 +70,16 @@ export const processLogin = async (req, res) => {
       refreshToken = exitstingToken.refreshToken;
     } else {
       // If no valid token exists (either missing or expired), generate a new refresh token
-      const { refreshToken: newRefreshToken } = generateTokens(userId);
+      const { refreshToken: newRefreshToken } = generateTokens(
+        userId,
+        user.role
+      );
 
       // Remove all existing refresh tokens associated with the user
       await RefreshToken.deleteMany({ userId });
 
       const newToken = new RefreshToken({
-        userId: userId,
+        userId,
         refreshToken: newRefreshToken,
         expiresAt: new Date(
           Date.now() + parseInt(process.env.REFRESH_TOKEN_MAX_AGE, 10)
@@ -85,7 +91,7 @@ export const processLogin = async (req, res) => {
       refreshToken = hashedRefreshToken;
     }
 
-    const { accessToken } = generateTokens(userId);
+    const { accessToken } = generateTokens(userId, user.role);
 
     setCookies(res, accessToken, refreshToken);
 
@@ -134,7 +140,7 @@ export const refreshToken = async (req, res) => {
       throw error;
     }
 
-    const { userId } = jwt.verify(
+    const { userId, role } = jwt.verify(
       refreshToken,
       process.env.REFRESH_TOKEN_SECRET
     );
@@ -146,7 +152,7 @@ export const refreshToken = async (req, res) => {
       throw error;
     }
 
-    const { accessToken } = generateTokens(userId);
+    const { accessToken } = generateTokens(userId, role);
 
     setCookies(res, refreshToken, accessToken);
 
