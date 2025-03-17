@@ -26,6 +26,9 @@ export const updateProfile = async (req, res) => {
   try {
     const userData = req.body;
     const userId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(userId))
+      throw { status: 400, message: "User ID is required." };
+
     const updatedUser = await User.findByIdAndUpdate(userId, userData, {
       new: true,
     }).select("-password");
@@ -39,6 +42,8 @@ export const updateProfile = async (req, res) => {
 export const deleteUser = async (req, res) => {
   try {
     const userId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(userId))
+      throw { status: 400, message: "User ID is required." };
 
     const user = await User.findById(userId).select("-password");
     if (!user) {

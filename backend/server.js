@@ -3,7 +3,8 @@ import connectDB from "./config/db.js";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import authRouter from "./routes/auth.routes.js";
-import userRouter from './routes/user.routes.js'
+import userRouter from "./routes/user.routes.js";
+import orphanageRouter from "./routes/orphanage.routes.js";
 
 dotenv.config();
 
@@ -13,8 +14,9 @@ const port = process.env.PORT || 3000;
 // Middlewares
 app.use(express.json());
 app.use(cookieParser());
-app.use("/user", userRouter)
+app.use("/user", userRouter);
 app.use("/auth", authRouter);
+app.use("/orphanage", orphanageRouter);
 
 const startServer = async () => {
   try {
