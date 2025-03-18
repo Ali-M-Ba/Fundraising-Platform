@@ -41,7 +41,7 @@ export const createOrphanage = async (req, res) => {
     const orphanage = new Orphanage(orphanageData);
     await orphanage.save();
 
-    handleResponse(res, 201, "Orphanages created successfully!", {
+    handleResponse(res, 201, "Orphanage created successfully!", {
       orphanage,
     });
   } catch (error) {
@@ -66,7 +66,7 @@ export const updateOrphanage = async (req, res) => {
     ).lean();
     if (!orphanage) throw { status: 404, message: "Orphanage doesn't exist." };
 
-    handleResponse(res, 200, "Orphanages updated successfully!", {
+    handleResponse(res, 200, "Orphanage updated successfully!", {
       orphanage,
     });
   } catch (error) {
@@ -89,7 +89,7 @@ export const deleteOrphanage = async (req, res) => {
     const deletedOrphanage = orphanage.toObject();
     await orphanage.deleteOne();
 
-    handleResponse(res, 200, "Orphanages deleted successfully!", {
+    handleResponse(res, 200, "Orphanage deleted successfully!", {
       deletedOrphanage,
     });
   } catch (error) {

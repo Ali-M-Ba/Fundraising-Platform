@@ -19,10 +19,25 @@ const orphanSchema = new Schema(
       enum: ["Male", "Female"],
       required: [true, "Gender is required."],
     },
+    healthStatus: {
+      type: String,
+      enum: ["Healthy", "Minor Health Issues", "Disabled"],
+      required: [true, "Health status is required."],
+    },
     orphanageId: {
       type: Types.ObjectId,
       ref: "Orphanage",
       required: [true, "Orphanage ID is required."],
+    },
+    location: {
+      city: {
+        type: String,
+        required: [true, "City name is required."],
+      },
+      country: {
+        type: String,
+        required: [true, "Country name is required."],
+      },
     },
     needs: [
       {
@@ -43,6 +58,10 @@ const orphanSchema = new Schema(
         },
       },
     ],
+    isSponsored: {
+      type: Boolean,
+      default: false,
+    },
     bio: {
       type: String,
       trim: true,

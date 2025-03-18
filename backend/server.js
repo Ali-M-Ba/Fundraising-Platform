@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import authRouter from "./routes/auth.routes.js";
 import userRouter from "./routes/user.routes.js";
 import orphanageRouter from "./routes/orphanage.routes.js";
+import orphanRouter from "./routes/orphan.routes.js";
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(cookieParser());
 app.use("/user", userRouter);
 app.use("/auth", authRouter);
 app.use("/orphanage", orphanageRouter);
+app.use("/orphan", orphanRouter);
 
 const startServer = async () => {
   try {
