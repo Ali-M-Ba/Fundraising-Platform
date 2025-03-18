@@ -6,6 +6,7 @@ import authRouter from "./routes/auth.routes.js";
 import userRouter from "./routes/user.routes.js";
 import orphanageRouter from "./routes/orphanage.routes.js";
 import orphanRouter from "./routes/orphan.routes.js";
+import campaignRouter from "./routes/campaign.routes.js";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use("/user", userRouter);
 app.use("/auth", authRouter);
 app.use("/orphanage", orphanageRouter);
 app.use("/orphan", orphanRouter);
+app.use("/campaign", campaignRouter);
 
 const startServer = async () => {
   try {

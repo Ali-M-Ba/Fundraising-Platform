@@ -14,6 +14,21 @@ const campaignSchema = new Schema(
       required: [true, "Description is required."],
       trim: true,
     },
+    Beneficiaries: {
+      type: Number,
+      required: [true, "Beneficiaries is required."],
+      min: [1, "Beneficiaries must be at least 1."],
+    },
+    location: {
+      city: {
+        type: String,
+        required: [true, "City name is required."],
+      },
+      country: {
+        type: String,
+        required: [true, "Country name is required."],
+      },
+    },
     orphanageId: {
       type: Types.ObjectId,
       ref: "Orphanage",
