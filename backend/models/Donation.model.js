@@ -7,12 +7,16 @@ const donationSchema = new Schema(
     donorId: {
       type: Types.ObjectId,
       ref: "User",
-      required: [true, "Donor ID is required."],
     },
-    campaignId: {
+    recipientId: {
       type: Types.ObjectId,
-      ref: "Campaign",
-      required: [true, "Campaign ID is required."],
+      required: [true, "Recipient ID is required."],
+      refPath: "donationTypeRef", // Dynamically references "Campaign" or "Orphan"
+    },
+    donationTypeRef: {
+      type: String,
+      required: true,
+      enum: ["Campaign", "Orphan"], // Ensures valid model references
     },
     amount: {
       type: Number,

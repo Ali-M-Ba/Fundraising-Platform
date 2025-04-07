@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-const { Schema, model } = mongoose;
+const { Schema, Types, model } = mongoose;
 
 const userSchema = new Schema(
   {
@@ -45,6 +45,30 @@ const userSchema = new Schema(
         type: String,
       },
     },
+    cart: [
+      {
+        donationType: {
+          type: String,
+          enum: ["campaign", "orphan"],
+          required: true,
+        },
+        recipientId: {
+          type: Types.ObjectId,
+          required: [true, "Recipient ID is required."],
+          refPath: "donationTypeRef",
+        },
+        donationTypeRef: {
+          type: String,
+          required: true,
+          enum: ["Campaign", "Orphan"],
+        },
+        amount: {
+          type: Number,
+          required: [true, "Donation amount is required."],
+          min: [1, "Donation amount must be at least 1."],
+        },
+      },
+    ],
   },
   {
     timestamps: true,

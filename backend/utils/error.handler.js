@@ -28,8 +28,8 @@ const handleErrors = (error) => {
 
 export const handleError = (res, error) => {
   const errorResponse = handleErrors(error);
-  res.status(errorResponse.status).json({
+  res.status(errorResponse.status || 500).json({
     success: false,
-    message: errorResponse.message,
+    message: errorResponse.message || "Internal Server Error",
   });
 };

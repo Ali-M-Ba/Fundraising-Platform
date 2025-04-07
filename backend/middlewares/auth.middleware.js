@@ -2,7 +2,7 @@ import User from "../models/User.model.js";
 import jwt from "jsonwebtoken";
 import { handleError } from "../utils/error.handler.js";
 
-const verifyToken = (token) => {
+export const verifyToken = (token) => {
   if (!token) {
     throw { message: "Access token not provided.", status: 400 };
   }
