@@ -64,6 +64,9 @@ const campaignSchema = new Schema(
         message: "End date must be after the start date.",
       },
     },
+    images: {
+      type: [String],
+    },    
   },
   {
     timestamps: true,

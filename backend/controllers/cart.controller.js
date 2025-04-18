@@ -1,6 +1,4 @@
 import mongoose from "mongoose";
-import Orphan from "../models/Orphan.model.js";
-import Campaign from "../models/Campaign.model.js";
 import { handleError } from "../utils/error.handler.js";
 import { handleResponse } from "../utils/response.handler.js";
 import {
@@ -8,64 +6,18 @@ import {
   validateUpdatingAmount,
 } from "../validators/cart.validator.js";
 import {
-  getUserUsingToken,
-  resolveCart,
-  validateDonationAmount,
-  getModel,
-  getDocument,
+  findUserByAccessToken,
+  syncCartWithValidItems,
+  ensureDonationWithinLimit,
 } from "../utils/cart.utils.js";
 
 export const getCartItems = async (req, res) => {
   try {
-    const user = await getUserUsingToken(req.cookies.accessToken);
-    const cart = user
-      ? resolveCart(user.cart, req.session.cart)
-      : req.session.cart;
-
-    if (cart.length === 0)
-      return handleResponse(res, 200, "Cart is empty.", []);
-
-    if (user) user.save();
-
-    const orphanIds = [];
-    const campaignIds = [];
-
-    // Separate orphan and campaign recipientIds
-    cart.forEach((item) => {
-      if (item.donationType === "orphan") {
-        orphanIds.push(item.recipientId);
-      } else if (item.donationType === "campaign") {
-        campaignIds.push(item.recipientId);
-      }
-    });
-
-    // Fetch all orphan and campaign documents in parallel
-    const [orphans, campaigns] = await Promise.all([
-      Orphan.find({ _id: { $in: orphanIds } })
-        .select("_id name isSponsored photo")
-        .lean(),
-      Campaign.find({ _id: { $in: campaignIds } })
-        .select("_id title targetAmount amountRaised")
-        .lean(),
-    ]);
-
-    // Convert arrays into maps for quick lookup
-    const orphanMap = new Map(
-      orphans.map((orphan) => [orphan._id.toString(), orphan])
+    const user = await findUserByAccessToken(req.cookies.accessToken);
+    const { detailedCart } = await syncCartWithValidItems(
+      user,
+      req.session.cart
     );
-    const campaignMap = new Map(
-      campaigns.map((campaign) => [campaign._id.toString(), campaign])
-    );
-
-    // Merge details into userCart
-    const detailedCart = cart.map((item) => ({
-      // Check if the object is a mongodb doc or js plain object
-      ...(item.toObject ? item.toObject() : item),
-      details:
-        orphanMap.get(item.recipientId.toString()) ||
-        campaignMap.get(item.recipientId.toString()) ||
-        null,
-    }));
 
     handleResponse(res, 200, "Cart Items retrieved successfully!", {
       detailedCart,
@@ -92,43 +44,50 @@ export const addToCart = async (req, res) => {
       };
     }
 
-    // Determine the appropriate model ('Campaign' or 'Orphan') based on donation type
-    const model = getModel(donationType);
+    const user = await findUserByAccessToken(req.cookies.accessToken);
 
-    // Fetch the corresponding document from the database
-    const document = await getDocument(model, recipientId);
-
-    const user = await getUserUsingToken(req.cookies.accessToken);
-
-    // Determine the current cart:
-    // - If the user is logged in, use their saved cart.
-    // - Otherwise, use the cart stored in the session.
-    const cart = user
-      ? resolveCart(user.cart, req.session.cart)
-      : req.session.cart;
-
-    // Convert the cart from an array to a Map for efficient lookup and modification.
-    const cartMap = new Map(
-      cart.map((item) => [item.recipientId.toString(), item])
+    const { validCart, detailedCart } = await syncCartWithValidItems(
+      user,
+      req.session.cart
     );
+
+    if (validCart.length > process.env.MAX_CART_ITEMS) {
+      throw { status: 400, message: "Cart limit exceeded." };
+    }
+
+    const validCartMap = new Map(
+      validCart.map((item) => [item.recipientId.toString(), item])
+    );
+    const detailedCartMap = new Map(
+      detailedCart.map((item) => [item.recipientId.toString(), item])
+    );
+
     let updatedItem;
-    const existingItem = cartMap.get(recipientId);
+    const existingItem = validCartMap.get(recipientId);
 
     if (existingItem) {
       // Calculate the new total amount to ensure it does not exceed campaign limits
       const totalAmount = existingItem.amount + amount;
-      validateDonationAmount(document, totalAmount, donationType);
+      const detailedItem = detailedCartMap.get(recipientId);
+      ensureDonationWithinLimit(detailedItem, totalAmount);
 
       existingItem.amount += amount;
       updatedItem = existingItem;
     } else {
       // Create a new cart item if it does not already exist
       updatedItem = { donationType, recipientId, donationTypeRef, amount };
-      cart.push(updatedItem);
-      cartMap.set(recipientId, updatedItem);
+      validCart.push(updatedItem);
+      validCartMap.set(recipientId, updatedItem);
     }
 
-    if (user) await user.save();
+    // Persist updated cart
+    // Convert the filtered Map back to an array and assign it.
+    if (user) {
+      user.cart = [...validCartMap.values()];
+      await user.save();
+    } else {
+      req.session.cart = [...validCartMap.values()];
+    }
 
     handleResponse(res, 201, "Item added successfully!", { item: updatedItem });
   } catch (error) {
@@ -139,13 +98,7 @@ export const addToCart = async (req, res) => {
 
 export const updateAmount = async (req, res) => {
   try {
-    const { error, value } = validateUpdatingAmount(req.body);
-    if (error) {
-      const errors = error.details.map((error) => error.message);
-      throw { status: 400, message: errors };
-    }
-    const { recipientId, donationType, amount } = value;
-
+    const { id: recipientId } = req.params;
     if (!mongoose.Types.ObjectId.isValid(recipientId)) {
       throw {
         status: 400,
@@ -153,47 +106,45 @@ export const updateAmount = async (req, res) => {
       };
     }
 
-    // Determine the appropriate model ('Campaign' or 'Orphan') based on donation type
-    const model = getModel(donationType);
+    const { error, value } = validateUpdatingAmount(req.body);
+    if (error) {
+      const errors = error.details.map((error) => error.message);
+      throw { status: 400, message: errors };
+    }
+    const { amount } = value;
 
-    // Fetch the corresponding document from the database
-    const document = await getDocument(model, recipientId);
+    const user = await findUserByAccessToken(req.cookies.accessToken);
 
-    const user = await getUserUsingToken(req.cookies.accessToken);
-
-    // Determine the current cart:
-    // - If the user is logged in, use their saved cart.
-    // - Otherwise, use the cart stored in the session.
-    const cart = user
-      ? resolveCart(user.cart, req.session.cart)
-      : req.session.cart;
-
-    // Convert the cart from an array to a Map for efficient lookup and modification.
-    const cartMap = new Map(
-      cart.map((item) => [item.recipientId.toString(), item])
+    const { validCart, detailedCart } = await syncCartWithValidItems(
+      user,
+      req.session.cart
     );
 
-    // We don't want update item doesn't exist.
-    if (!cartMap.has(recipientId)) {
+    const existingItem = validCart.find(
+      (item) => item.recipientId.toString() === recipientId
+    );
+    if (!existingItem) {
       return handleError(res, {
         status: 404,
         message: "Item not found in cart.",
       });
     }
 
-    const existingItem = cartMap.get(recipientId);
-    validateDonationAmount(document, amount, donationType);
+    const detailedItem = detailedCart.find(
+      (item) => item.recipientId.toString() === recipientId
+    );
+
+    ensureDonationWithinLimit(detailedItem, amount);
     existingItem.amount = amount;
 
     if (user) await user.save();
-    // const plainItem = user ? existingItem.toObject() : existingItem;
+    const plainItem = existingItem.toObject
+      ? existingItem.toObject()
+      : existingItem;
 
-    handleResponse(
-      res,
-      200,
-      "Item updated successfully!",
-      user ? existingItem.toObject() : existingItem
-    );
+    handleResponse(res, 200, "Item updated successfully!", {
+      updatedItem: plainItem,
+    });
   } catch (error) {
     console.error("Error occurred updating amount: ", error);
     handleError(res, error);
@@ -203,7 +154,6 @@ export const updateAmount = async (req, res) => {
 export const removeItem = async (req, res) => {
   try {
     const { id: recipientId } = req.params;
-
     if (!mongoose.Types.ObjectId.isValid(recipientId)) {
       throw {
         status: 400,
@@ -211,21 +161,27 @@ export const removeItem = async (req, res) => {
       };
     }
 
-    let cart;
-    const user = await getUserUsingToken(req.cookies.accessToken);
+    const user = await findUserByAccessToken(req.cookies.accessToken);
+    const { validCart } = await syncCartWithValidItems(user, req.session.cart);
+
+    const removedItem =
+      validCart.find((item) => item.recipientId.toString() === recipientId) ||
+      {};
+    const updatedCart = validCart.filter(
+      (item) => item.recipientId.toString() !== recipientId
+    );
+
     if (user) {
-      resolveCart(user.cart, req.session.cart);
-      cart = user.cart = user.cart.filter(
-        (item) => item.recipientId.toString() !== recipientId
-      );
+      user.cart = updatedCart;
       await user.save();
     } else {
-      cart = req.session.cart = req.session.cart.filter(
-        (item) => item.recipientId !== recipientId
-      );
+      req.session.cart = updatedCart;
     }
 
-    handleResponse(res, 200, "Item removed from cart successfully!", { cart });
+    handleResponse(res, 200, "Item removed from cart successfully!", {
+      cart: updatedCart,
+      removedItem,
+    });
   } catch (error) {
     console.error("Error occurred Clearing cart: ", error);
     handleError(res, error);
@@ -234,17 +190,19 @@ export const removeItem = async (req, res) => {
 
 export const clearCart = async (req, res) => {
   try {
-    let cart;
-    const user = await getUserUsingToken(req.cookies.accessToken);
+    const clearedCart = [];
+
+    const user = await findUserByAccessToken(req.cookies.accessToken);
     if (user) {
-      resolveCart(user.cart, req.session.cart);
-      cart = user.cart = [];
+      user.cart = clearedCart;
       await user.save();
     } else {
-      cart = req.session.cart = [];
+      req.session.cart = clearedCart;
     }
 
-    handleResponse(res, 200, "Cart cleared successfully!", cart);
+    handleResponse(res, 200, "Cart cleared successfully!", {
+      cart: clearedCart,
+    });
   } catch (error) {
     console.error("Error occurred Clearing cart: ", error);
     handleError(res, error);

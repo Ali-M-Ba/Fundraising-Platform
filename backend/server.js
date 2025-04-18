@@ -2,7 +2,6 @@ import express from "express";
 import connectDB from "./config/db.js";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-import mongoose from "mongoose";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import authRouter from "./routes/auth.routes.js";

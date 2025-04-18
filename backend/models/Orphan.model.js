@@ -66,16 +66,9 @@ const orphanSchema = new Schema(
       type: String,
       trim: true,
     },
-    photo: {
-      type: String,
-      trim: true,
-      validate: {
-        validator: function (v) {
-          return /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg))$/.test(v);
-        },
-        message: "Invalid image URL format.",
-      },
-    },
+    photos: {
+      type: [String],
+    }, 
   },
   {
     timestamps: true,

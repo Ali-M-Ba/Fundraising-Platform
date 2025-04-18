@@ -13,8 +13,6 @@ const addToCartSchema = Joi.object({
 });
 
 const updateAmountSchema = Joi.object({
-  donationType: Joi.string().required(),
-  recipientId: Joi.string().required(),
   amount: Joi.number().positive().required(),
 });
 

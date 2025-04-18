@@ -3,12 +3,76 @@ import User from "../models/User.model.js";
 import Orphan from "../models/Orphan.model.js";
 import Campaign from "../models/Campaign.model.js";
 
+export const extractValidCartItems = async (cart) => {
+  if (!Array.isArray(cart) || cart.length === 0) {
+    return { validCart: [], detailedCart: [] };
+  }
 
-export const getUserUsingToken = async (accessToken) => {
+  const orphanIds = [];
+  const campaignIds = [];
+
+  // Separate orphan and campaign recipientIds
+  cart.forEach((item) => {
+    if (item.donationType === "orphan") {
+      orphanIds.push(item.recipientId);
+    } else if (item.donationType === "campaign") {
+      campaignIds.push(item.recipientId);
+    }
+  });
+
+  // Fetch all orphan and campaign documents in parallel
+  const [orphans, campaigns] = await Promise.all([
+    Orphan.find({ _id: { $in: orphanIds } })
+      .select("_id name isSponsored photos")
+      .lean(),
+    Campaign.find({ _id: { $in: campaignIds } })
+      .select("_id title status targetAmount amountRaised images")
+      .lean(),
+  ]);
+
+  // Convert arrays into maps for quick lookup
+  const orphanMap = new Map(
+    orphans.map((orphan) => [orphan._id.toString(), orphan])
+  );
+  const campaignMap = new Map(
+    campaigns.map((campaign) => [campaign._id.toString(), campaign])
+  );
+
+  const validCart = cart.filter((item) => {
+    const strId = item.recipientId.toString();
+    const match = orphanMap.get(strId) || campaignMap.get(strId);
+
+    // Valid if orphan is not sponsored or campaign is active
+    const isValid = match?.isSponsored === false || match?.status === "active";
+    if (!isValid)
+      console.warn("Removing invalid or non-existent item from cart:", item);
+
+    return isValid;
+  });
+
+  // Merge details
+  const detailedCart = validCart.map((item) => ({
+    // This approach doesn't work with js objects
+    // ...item?.toObject?.(),
+    // cause it returns 'undefined' when item.toObject() method not exists
+    // it will speard ...undefined value
+    ////////////////////////////////////
+    // Check if the object is a mongodb doc or js plain object
+    ...(item.toObject ? item.toObject() : item),
+    details:
+      orphanMap.get(item.recipientId.toString()) ||
+      campaignMap.get(item.recipientId.toString()) ||
+      null,
+  }));
+
+  return { validCart, detailedCart };
+};
+
+export const findUserByAccessToken = async (token) => {
   let userId;
-  if (accessToken) {
+  if (token) {
     try {
-      const { userId: id } = verifyToken(accessToken);
+      const { userId: id } = verifyToken(token);
       userId = id;
     } catch (error) {
       console.error("Error verifying token: ", error);
@@ -25,74 +89,63 @@ export const getUserUsingToken = async (accessToken) => {
   return user;
 };
 
-export const resolveCart = (userStoredCart, guestCart) => {
-  let finalCart = userStoredCart;
+const mergeAndClearGuestCart = (userCart, guestCart) => {
+  let finalCart = userCart;
 
   if (guestCart.length > 0) {
-    finalCart = mergeGuestCartIntoUserCart(finalCart, guestCart);
+    finalCart = combineCartItems(finalCart, guestCart);
     guestCart.length = 0; // Clear guest cart after merging
   }
 
   return finalCart;
 };
 
-const mergeGuestCartIntoUserCart = (userCart, guestCart) => {
+const combineCartItems = (baseCart, additionalCart) => {
   const cartItemsMap = new Map(
-    userCart.map((item) => [item.recipientId.toString(), item])
+    baseCart.map((item) => [item.recipientId.toString(), item])
   );
 
-  guestCart.forEach((guestItem) => {
+  additionalCart.forEach((guestItem) => {
     const recipientKey = guestItem.recipientId.toString();
     const existingItem = cartItemsMap.get(recipientKey);
 
     if (existingItem) {
       existingItem.amount += guestItem.amount;
     } else {
-      userCart.push(guestItem);
+      baseCart.push(guestItem);
       cartItemsMap.set(recipientKey, guestItem);
     }
   });
 
-  return userCart;
+  return baseCart;
 };
 
-export const validateDonationAmount = (document, amount, donationType) => {
-  if (donationType === "campaign") {
-    const remainAmount = document.targetAmount - document.amountRaised;
-    if (amount > remainAmount) {
+export const syncCartWithValidItems = async (user, guestSessionCart) => {
+  const resolvedCart = user
+    ? mergeAndClearGuestCart(user.cart, guestSessionCart)
+    : guestSessionCart;
+
+  const { validCart, detailedCart } = await getCartDetails(resolvedCart);
+
+  if (resolvedCart.length !== validCart.length) {
+    if (user) {
+      user.cart = validCart;
+      await user.save();
+    }
+    guestSessionCart = validCart;
+  }
+
+  return { validCart, detailedCart };
+};
+
+export const ensureDonationWithinLimit = (donationItem, donationAmount) => {
+  if (donationItem.donationType === "campaign") {
+    const remainAmount = donationItem.targetAmount - donationItem.amountRaised;
+    if (donationAmount > remainAmount) {
       throw {
         status: 400,
         message: `We apologize, the maximum donation amount is ${remainAmount} dollars.`,
       };
     }
   }
-};
-
-export const getModel = (donationType) => {
-  const model =
-    donationType === "orphan"
-      ? Orphan
-      : donationType === "campaign"
-      ? Campaign
-      : null;
-  if (!model) {
-    throw {
-      status: 400,
-      message: `Invalid donation type: ${donationType}. Valid types are 'orphan' and 'campaign'.`,
-    };
-  }
-
-  return model;
-};
-
-export const getDocument = async (model, recipientId) => {
-  const document = await model.findById(recipientId);
-  if (!document) {
-    throw {
-      status: 404,
-      message: "Document doesn't exist.",
-    };
-  }
-
-  return document;
 };
