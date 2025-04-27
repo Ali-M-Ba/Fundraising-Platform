@@ -9,15 +9,13 @@ import {
   findUserByAccessToken,
   syncCartWithValidItems,
   ensureDonationWithinLimit,
+  extractValidCartItems,
 } from "../utils/cart.utils.js";
 
 export const getCartItems = async (req, res) => {
   try {
     const user = await findUserByAccessToken(req.cookies.accessToken);
-    const { detailedCart } = await syncCartWithValidItems(
-      user,
-      req.session.cart
-    );
+    const { detailedCart } = await syncCartWithValidItems(user, req);
 
     handleResponse(res, 200, "Cart Items retrieved successfully!", {
       detailedCart,
@@ -35,7 +33,7 @@ export const addToCart = async (req, res) => {
       const errors = error.details.map((error) => error.message);
       throw { status: 400, message: errors };
     }
-    const { recipientId, donationType, donationTypeRef, amount } = value;
+    let { recipientId, donationType, donationTypeRef, amount } = value;
 
     if (!mongoose.Types.ObjectId.isValid(recipientId)) {
       throw {
@@ -46,10 +44,7 @@ export const addToCart = async (req, res) => {
 
     const user = await findUserByAccessToken(req.cookies.accessToken);
 
-    const { validCart, detailedCart } = await syncCartWithValidItems(
-      user,
-      req.session.cart
-    );
+    const { validCart, detailedCart } = await syncCartWithValidItems(user, req);
 
     if (validCart.length > process.env.MAX_CART_ITEMS) {
       throw { status: 400, message: "Cart limit exceeded." };
@@ -67,14 +62,21 @@ export const addToCart = async (req, res) => {
 
     if (existingItem) {
       // Calculate the new total amount to ensure it does not exceed campaign limits
-      const totalAmount = existingItem.amount + amount;
       const detailedItem = detailedCartMap.get(recipientId);
-      ensureDonationWithinLimit(detailedItem, totalAmount);
+      const totalAmount = existingItem.amount + amount;
+      const validAmount = ensureDonationWithinLimit(detailedItem, totalAmount);
 
-      existingItem.amount += amount;
+      existingItem.amount = validAmount;
       updatedItem = existingItem;
     } else {
       // Create a new cart item if it does not already exist
+      const { detailedCart } = await extractValidCartItems([
+        { donationType, recipientId, donationTypeRef, amount },
+      ]);
+      const detailedItem = detailedCart[0];
+      const validAmount = ensureDonationWithinLimit(detailedItem, amount);
+
+      amount = validAmount;
       updatedItem = { donationType, recipientId, donationTypeRef, amount };
       validCart.push(updatedItem);
       validCartMap.set(recipientId, updatedItem);
@@ -115,10 +117,7 @@ export const updateAmount = async (req, res) => {
 
     const user = await findUserByAccessToken(req.cookies.accessToken);
 
-    const { validCart, detailedCart } = await syncCartWithValidItems(
-      user,
-      req.session.cart
-    );
+    const { validCart, detailedCart } = await syncCartWithValidItems(user, req);
 
     const existingItem = validCart.find(
       (item) => item.recipientId.toString() === recipientId
@@ -134,8 +133,8 @@ export const updateAmount = async (req, res) => {
       (item) => item.recipientId.toString() === recipientId
     );
 
-    ensureDonationWithinLimit(detailedItem, amount);
-    existingItem.amount = amount;
+    const validAmount = ensureDonationWithinLimit(detailedItem, amount);
+    existingItem.amount = validAmount;
 
     if (user) await user.save();
     const plainItem = existingItem.toObject
@@ -162,7 +161,7 @@ export const removeItem = async (req, res) => {
     }
 
     const user = await findUserByAccessToken(req.cookies.accessToken);
-    const { validCart } = await syncCartWithValidItems(user, req.session.cart);
+    const { validCart } = await syncCartWithValidItems(user, req);
 
     const removedItem =
       validCart.find((item) => item.recipientId.toString() === recipientId) ||

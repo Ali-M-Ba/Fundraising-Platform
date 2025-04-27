@@ -10,6 +10,7 @@ import orphanageRouter from "./routes/orphanage.routes.js";
 import orphanRouter from "./routes/orphan.routes.js";
 import campaignRouter from "./routes/campaign.routes.js";
 import cartRouter from "./routes/cart.routes.js";
+import donationRouter from "./routes/donation.routes.js";
 
 dotenv.config();
 
@@ -49,6 +50,7 @@ app.use("/orphanage", orphanageRouter);
 app.use("/orphan", orphanRouter);
 app.use("/campaign", campaignRouter);
 app.use("/cart", cartRouter);
+app.use("/donation", donationRouter);
 
 const startServer = async () => {
   try {

@@ -8,27 +8,11 @@ export const extractValidCartItems = async (cart) => {
     return { validCart: [], detailedCart: [] };
   }
 
-  const orphanIds = [];
-  const campaignIds = [];
+  const { orphans: orphanDocs, campaigns: campaignDocs } =
+    await getDonationRecipients(cart);
 
-  // Separate orphan and campaign recipientIds
-  cart.forEach((item) => {
-    if (item.donationType === "orphan") {
-      orphanIds.push(item.recipientId);
-    } else if (item.donationType === "campaign") {
-      campaignIds.push(item.recipientId);
-    }
-  });
-
-  // Fetch all orphan and campaign documents in parallel
-  const [orphans, campaigns] = await Promise.all([
-    Orphan.find({ _id: { $in: orphanIds } })
-      .select("_id name isSponsored photos")
-      .lean(),
-    Campaign.find({ _id: { $in: campaignIds } })
-      .select("_id title status targetAmount amountRaised images")
-      .lean(),
-  ]);
+  const orphans = orphanDocs.map((orphan) => orphan.toObject());
+  const campaigns = campaignDocs.map((campaign) => campaign.toObject());
 
   // Convert arrays into maps for quick lookup
   const orphanMap = new Map(
@@ -46,6 +30,8 @@ export const extractValidCartItems = async (cart) => {
     const isValid = match?.isSponsored === false || match?.status === "active";
     if (!isValid)
       console.warn("Removing invalid or non-existent item from cart:", item);
+
+    if (isValid) item.amount = ensureDonationWithinLimit(match, item.amount);
 
     return isValid;
   });
@@ -120,32 +106,66 @@ const combineCartItems = (baseCart, additionalCart) => {
   return baseCart;
 };
 
-export const syncCartWithValidItems = async (user, guestSessionCart) => {
+export const syncCartWithValidItems = async (user, req) => {
   const resolvedCart = user
-    ? mergeAndClearGuestCart(user.cart, guestSessionCart)
-    : guestSessionCart;
+    ? mergeAndClearGuestCart(user.cart, req.session.cart)
+    : req.session.cart;
 
-  const { validCart, detailedCart } = await getCartDetails(resolvedCart);
+  const { validCart, detailedCart } = await extractValidCartItems(resolvedCart);
 
   if (resolvedCart.length !== validCart.length) {
     if (user) {
       user.cart = validCart;
       await user.save();
     }
-    guestSessionCart = validCart;
+    req.session.cart = validCart;
   }
 
   return { validCart, detailedCart };
 };
 
 export const ensureDonationWithinLimit = (donationItem, donationAmount) => {
-  if (donationItem.donationType === "campaign") {
-    const remainAmount = donationItem.targetAmount - donationItem.amountRaised;
-    if (donationAmount > remainAmount) {
-      throw {
-        status: 400,
-        message: `We apologize, the maximum donation amount is ${remainAmount} dollars.`,
-      };
+  // Extract details depending on the shape of donationItem
+  const isCampaign =
+    donationItem.donationType === "campaign" ||
+    donationItem.status === "active";
+  const details = donationItem.details || donationItem;
+
+  if (
+    isCampaign &&
+    details.targetAmount != null &&
+    details.amountRaised != null
+  ) {
+    const remainingAmount = details.targetAmount - details.amountRaised;
+    return donationAmount > remainingAmount ? remainingAmount : donationAmount;
+  }
+
+  // Default
+  return donationAmount;
+};
+
+export const getDonationRecipients = async (cart) => {
+  const orphanIds = [];
+  const campaignIds = [];
+
+  // Separate recipient IDs based on donationType
+  for (const item of cart) {
+    if (item.donationType === "orphan") {
+      orphanIds.push(item.recipientId);
+    } else if (item.donationType === "campaign") {
+      campaignIds.push(item.recipientId);
     }
   }
+
+  // Fetch data in parallel
+  const [orphans, campaigns] = await Promise.all([
+    Orphan.find({ _id: { $in: orphanIds } }).select(
+      "_id orphanageId name isSponsored photos"
+    ),
+    Campaign.find({ _id: { $in: campaignIds } }).select(
+      "_id orphanageId title status targetAmount amountRaised images"
+    ),
+  ]);
+
+  return { orphans, campaigns };
 };
