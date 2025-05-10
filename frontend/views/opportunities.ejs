@@ -1,0 +1,23 @@
+<%- include('partials/header'); -%>
+
+<div class="container min-h-screen my-10 mx-auto max-w-7xl px-8 py-8">
+  <!-- Heading -->
+  <div class="flex justify-between items-center mb-8 px-8 py-4 bg-white rounded-full">
+    <h1 class="text-3xl font-bold text-green-700">Donations Opportunities</h1>
+    <!-- Tabs -->
+    <div class="flex space-x-4">
+      <button id="orphan-btn" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-full hover:bg-green-700 transition">
+        Orphans
+      </button>
+      <button id="campaign-btn" class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-full hover:bg-gray-300 transition">
+        Campaigns
+      </button>
+    </div>
+  </div>
+
+  <!-- Cards Container -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="cards-container"></div>
+</div>
+
+<script type="module" src="/scripts/opportunities/opportunities.js"></script>
+<%- include('partials/footer'); -%>

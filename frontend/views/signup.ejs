@@ -1,0 +1,110 @@
+<%- include('partials/header'); -%>
+
+<div class="flex justify-center items-center min-h-screen bg-neutral-100">
+  <form
+    method="post"
+    action="/signup"
+    class="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
+  >
+    <h2 class="text-2xl font-bold text-green-700 mb-6">Sign Up</h2>
+    <label for="fullName" class="block text-gray-700 mb-2">Full Name</label>
+    <input
+      type="text"
+      name="fullName"
+      id="fullName"
+      class="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-300"
+    />
+    <div class="fullName error text-red-500 text-sm mb-4"></div>
+    <label for="phone" class="block text-gray-700 mb-2">Phone Number</label>
+    <input
+      type="text"
+      name="phone"
+      id="phone"
+      class="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-300"
+    />
+    <div class="phone error text-red-500 text-sm mb-4"></div>
+    <label for="email" class="block text-gray-700 mb-2">Email</label>
+    <input
+      type="email"
+      name="email"
+      id="email"
+      class="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-300"
+    />
+    <div class="email error text-red-500 text-sm mb-4"></div>
+    <label for="password" class="block text-gray-700 mb-2">Password</label>
+    <input
+      type="password"
+      name="password"
+      id="password"
+      class="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-300"
+    />
+    <div class="password error text-red-500 text-sm mb-4"></div>
+    <button
+      type="submit"
+      class="w-full bg-green-700 text-white py-3 rounded-lg hover:bg-green-700"
+    >
+      Sign Up
+    </button>
+  </form>
+</div>
+
+<script>
+  const form = document.querySelector("form");
+  const fullNameError = document.querySelector(".fullName.error");
+  const phoneError = document.querySelector(".phone.error");
+  const emailError = document.querySelector(".email.error");
+  const passwordError = document.querySelector(".password.error");
+
+  // Function to display errors in the corresponding divs
+  const displayErrors = (errors) => {
+    // Clear previous error messages
+    fullNameError.textContent = "";
+    phoneError.textContent = "";
+    emailError.textContent = "";
+    passwordError.textContent = "";
+
+    // Loop through errors' messages and populate the relevant error divs
+    errors.forEach((err) => {
+      if (err.toLowerCase().includes("full name")) {
+        fullNameError.textContent = err;
+      } else if (err.toLowerCase().includes("phone")) {
+        phoneError.textContent = err;
+      } else if (err.toLowerCase().includes("email")) {
+        emailError.textContent = err;
+      } else if (err.toLowerCase().includes("password")) {
+        passwordError.textContent = err;
+      }
+    });
+  };
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const fullName = event.target.fullName.value;
+    const phone = event.target.phone.value;
+    const email = event.target.email.value;
+    const password = event.target.password.value;
+
+    try {
+      const res = await fetch("/auth/signup", {
+        method: "POST",
+        body: JSON.stringify({ fullName, phone, email, password }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // Display errors if the response is not OK
+        displayErrors(data.errors || [data.message]);
+      } else {
+        console.log("Signup successful!");
+        window.location.href = "/login";
+      }
+    } catch (error) {
+      console.error("Something went wrong:", error);
+    }
+  });
+</script>
+
+<%- include('partials/footer'); -%>

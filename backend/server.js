@@ -44,13 +44,13 @@ app.use((req, res, next) => {
   }
   next();
 });
-app.use("/user", userRouter);
-app.use("/auth", authRouter);
-app.use("/orphanage", orphanageRouter);
-app.use("/orphan", orphanRouter);
-app.use("/campaign", campaignRouter);
-app.use("/cart", cartRouter);
-app.use("/donation", donationRouter);
+app.use("/api/user", userRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/orphanage", orphanageRouter);
+app.use("/api/orphan", orphanRouter);
+app.use("/api/campaign", campaignRouter);
+app.use("/api/cart", cartRouter);
+app.use("/api/donation", donationRouter);
 
 const startServer = async () => {
   try {
