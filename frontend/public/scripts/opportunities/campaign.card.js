@@ -54,9 +54,10 @@ export const createCampaignCard = (campaign) => {
             <button class="flex-1 bg-green-600 text-white text-sm font-semibold py-2 rounded hover:bg-green-700 transition donate-btn">
               Donate
             </button>
-            <button class="flex-1 border text-green-600 border-green-600 text-sm font-semibold py-2 rounded hover:bg-green-50 transition">
+            <a href="campaign/${campaign._id}"
+              class="flex-1 border text-green-600 border-green-600 text-sm font-semibold py-2 rounded hover:bg-green-50 transition text-center block">
               Details
-            </button>
+            </a>
             <button id="cart-btn" class="p-2 text-gray-500 hover:text-green-700">
               <!-- Cart Icon -->
               🛒

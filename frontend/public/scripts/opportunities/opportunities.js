@@ -1,20 +1,8 @@
 import { showToast } from "../toast.js";
 import { fetchCampaigns, fetchOrphans } from "./api.opportunities.js";
-import { createCampaignCard } from "./campaignCard.js";
-import { createOrphanCard } from "./orphanCard.js";
-
-function getQueryParam(name) {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get(name);
-}
-
-function renderByType(type) {
-  if (type === "campaigns") {
-    document.getElementById("campaign-btn").click();
-  } else if (type === "orphans") {
-    document.getElementById("orphan-btn").click();
-  }
-}
+import { createCampaignCard } from "./campaign.card.js";
+import { createOrphanCard } from "./orphan.card.js";
+import { getQueryParam, renderByType } from "./opportunities.utils.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const CardsContainer = document.getElementById("cards-container");
@@ -52,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    const type = getQueryParam("type");
+    const type = getQueryParam("type", "orphans");
     if (type) {
       renderByType(type);
     }

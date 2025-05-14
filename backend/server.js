@@ -18,7 +18,18 @@ const app = express();
 const port = process.env.PORT || 3000;
 const isProduction = process.env.NODE_ENV === "production";
 
+// Set the views directory
+app.set("views", "frontend/views");
+app.get("/", (req, res) => res.render("homepage.ejs"));
+app.get("/login", (req, res) => res.render("login.ejs"));
+app.get("/signup", (req, res) => res.render("signup.ejs"));
+app.get("/opportunities", (req, res) => res.render("opportunities.ejs"));
+app.get("/orphanages", (req, res) => res.send("orphanages.ejs"));
+app.get("/cart", (req, res) => res.render("cart.ejs"));
+app.get("/case", (req, res) => res.render("case.ejs"));
+
 // Middlewares
+app.use(express.static("frontend/public"));
 app.use(express.json());
 app.use(cookieParser());
 app.use(
