@@ -9,7 +9,7 @@
         <p class="text-lg md:text-xl mb-14 max-w-2xl">
           The <strong>Donations Platform</strong> is a <strong>simple</strong> and <strong>effective solution</strong> that connects <strong>donors</strong> with <strong>individuals in need</strong>, ensuring a <strong>secure</strong> and <strong>transparent donation process</strong> under the guidance of a <strong>trusted overseeing authority</strong>.
         </p>
-        <a href="#" class="bg-white text-green-700 font-semibold px-6 py-3 rounded shadow hover:bg-gray-200 transition">
+        <a href="/opportunities" class="bg-white text-green-700 font-semibold px-6 py-3 rounded shadow hover:bg-gray-200 transition">
           Donate Now
         </a>
       </div>
@@ -45,13 +45,15 @@
 </section>
 
 <!-- Donation Opportunities Header -->
-<section class="px-6 py-12 bg-white">
-  <div class="max-w-7xl sm:px-6 lg:px-8 mx-auto flex justify-between items-center">
+<section class="max-w-7xl sm:px-6 lg:px-8 mx-auto py-12">
+  <div class="flex justify-between items-center mb-8 px-8 py-4 bg-white rounded-full">
     <h2 class="text-green-700 text-3xl font-bold">Donation Opportunities</h2>
-    <a href="/opportunities" class="bg-green-600 text-white text-sm font-semibold px-6 py-3 rounded hover:bg-green-700 transition">
+    <a href="/opportunities" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-full hover:bg-green-700 transition">
       View all
     </a>
   </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="cards-container"></div>
 </section>
 
+<script type="module" src="/scripts/homepage/homepage.js"></script>
 <%- include('partials/footer'); -%>

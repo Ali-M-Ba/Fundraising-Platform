@@ -37,15 +37,17 @@ export const getCampaign = async (req, res) => {
 export const createCampaign = async (req, res) => {
   try {
     const campaignData = req.body;
+    const campaigns = Array.isArray(campaignData)
+      ? campaignData
+      : [campaignData];
 
-    const campaign = new Campaign(campaignData);
-    await campaign.save();
+    const savedCampaigns = await Campaign.insertMany(campaigns);
 
-    handleResponse(res, 201, "Campaign created successfully!", {
-      campaign,
+    handleResponse(res, 201, "Campaign(s) created successfully!", {
+      campaigns: savedCampaigns,
     });
   } catch (error) {
-    console.log("Error creating new campaign: ", error);
+    console.log("Error creating campaign(s):", error);
     handleError(res, error);
   }
 };
@@ -57,9 +59,13 @@ export const updateCampaign = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(campaignId))
       throw { status: 400, message: "Campaign ID is required." };
 
-    const campaign = await Campaign.findByIdAndUpdate(campaignId, campaignData, {
-      new: true,
-    }).lean();
+    const campaign = await Campaign.findByIdAndUpdate(
+      campaignId,
+      campaignData,
+      {
+        new: true,
+      }
+    ).lean();
     if (!campaign) throw { status: 404, message: "Campaign doesn't exist." };
 
     handleResponse(res, 200, "Campaigns updated successfully!", {
