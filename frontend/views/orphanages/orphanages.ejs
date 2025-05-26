@@ -1,0 +1,21 @@
+<%- include('../partials/header'); -%>
+
+<section class="p-6 bg-gray-100 min-h-screen max-w-4xl mx-auto">
+  <h2 class="text-2xl font-bold mb-4">Orphanages</h2>
+  <a href="/orphanages/create" class="bg-green-600 text-white px-4 py-2 rounded mb-4 inline-block">Add Orphanage</a>
+  <div class="grid gap-6">
+    <!-- Loop over orphanages -->
+    <div class="bg-white p-6 rounded shadow-md border">
+      <h3 class="text-xl font-semibold mb-1">Orphanage Name</h3>
+      <p class="text-sm text-gray-600 mb-1">City, Country</p>
+      <p class="mb-1">admin@example.com | +123456789</p>
+      <p class="mb-2 text-gray-700">Description about orphanage...</p>
+      <div class="mt-4 flex gap-4">
+        <a href="/orphanages/1/edit" class="text-green-600 hover:underline">Edit</a>
+        <a href="/orphanages/1/delete" class="text-red-600 hover:underline">Delete</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/footer'); -%>

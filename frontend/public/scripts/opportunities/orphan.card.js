@@ -1,4 +1,5 @@
-import { addItemToCart } from "./api.opportunities.js";
+import { showToast } from "../toast.js";
+import { addItemToCart } from "./opportunities.api.js";
 
 export const createOrphanCard = (orphan) => {
   const card = document.createElement("div");
@@ -54,7 +55,7 @@ export const createOrphanCard = (orphan) => {
                   <button class="flex-1 bg-green-600 text-white text-sm font-semibold py-2 rounded hover:bg-green-700 transition">
                     Donate
                   </button>
-                  <a href="orphan/${orphan._id}"
+                  <a href="case?id=${orphan._id}&type=orphan"
                     class="flex-1 border text-green-600 border-green-600 text-sm font-semibold py-2 rounded hover:bg-green-50 transition text-center block">
                     Details
                   </a>
@@ -96,12 +97,13 @@ export const createOrphanCard = (orphan) => {
 
   const cartBtn = card.querySelector("#cart-btn");
   cartBtn.addEventListener("click", async () => {
-    await addItemToCart({
+    const { message, success } = await addItemToCart({
       donationType: "orphan",
       recipientId: orphan._id,
       donationTypeRef: "Orphan",
       amount: parseInt(resultValue.textContent) || 1,
     });
+    showToast(message, success ? "success" : "error");
   });
 
   return card;

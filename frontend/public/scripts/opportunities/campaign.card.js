@@ -1,4 +1,5 @@
-import { addItemToCart } from "./api.opportunities.js";
+import { showToast } from "../toast.js";
+import { addItemToCart } from "./opportunities.api.js";
 
 export const createCampaignCard = (campaign) => {
   const card = document.createElement("div");
@@ -9,9 +10,22 @@ export const createCampaignCard = (campaign) => {
     (campaign.amountRaised / campaign.targetAmount) * 100
   );
 
+  // Add a completed badge if status is 'completed'
+  const completedTag =
+    campaign.status === "completed"
+      ? `<span class="absolute top-2 right-2 bg-green-700 text-white text-xs font-semibold px-2 py-1 rounded-full shadow">
+         Completed
+       </span>`
+      : "";
+
   card.innerHTML = `
-        <!-- Image -->
-        <img class="w-full h-40 object-cover" src="${campaign.images[0]}" alt="${campaign.title}" />
+        <div class="relative">
+          <!-- Completed Tag (if any) -->
+          ${completedTag}
+          
+          <!-- Image -->
+          <img class="w-full h-40 object-cover" src="${campaign.images[0]}" alt="${campaign.title}" />
+        </div>
 
         <!-- Title -->
         <div class="p-4">
@@ -51,10 +65,10 @@ export const createCampaignCard = (campaign) => {
 
           <!-- Action Buttons -->
           <div class="flex items-center space-x-2">
-            <button class="flex-1 bg-green-600 text-white text-sm font-semibold py-2 rounded hover:bg-green-700 transition donate-btn">
+            <button id="donate" class="flex-1 bg-green-600 text-white text-sm font-semibold py-2 rounded hover:bg-green-700 transition donate-btn">
               Donate
             </button>
-            <a href="campaign/${campaign._id}"
+            <a href="case?id=${campaign._id}&type=campaign"
               class="flex-1 border text-green-600 border-green-600 text-sm font-semibold py-2 rounded hover:bg-green-50 transition text-center block">
               Details
             </a>
@@ -66,16 +80,46 @@ export const createCampaignCard = (campaign) => {
         </div>
       `;
 
-  // Add to Cart functionality
   const cartBtn = card.querySelector("#cart-btn");
+  const donateBtn = card.querySelector("#donate");
   const amountInput = card.querySelector('input[type="number"]');
   cartBtn.addEventListener("click", async () => {
-    await addItemToCart({
+    const { message, success } = await addItemToCart({
       donationType: "campaign",
       recipientId: campaign._id,
       donationTypeRef: "Campaign",
       amount: parseInt(amountInput.value) || 1,
     });
+    showToast(message, success ? "success" : "error");
+  });
+
+  donateBtn.addEventListener("click", async () => {
+    try {
+      const response = await fetch("/api/donation/donate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          donationType: "campaign",
+          recipientId: campaign._id,
+          donationTypeRef: "Campaign",
+          amount: parseInt(amountInput.value) || 1,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        showToast(result.message, result.success ? "success" : "error");
+        window.location.href = result.data.sessionURL;
+      } else {
+        showToast(result.message, result.success ? "success" : "error");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      showToast(error.message, error.success ? "success" : "error");
+    }
   });
 
   return card;

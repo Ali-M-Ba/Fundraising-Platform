@@ -9,6 +9,11 @@ const orphanSchema = new Schema(
       required: [true, "Name is required."],
       trim: true,
     },
+    nationalNumber: {
+      type: Number,
+      required: [true, "National number is required."],
+      unique: true,
+    },
     age: {
       type: Number,
       required: [true, "Age is required."],
@@ -68,7 +73,7 @@ const orphanSchema = new Schema(
     },
     photos: {
       type: [String],
-    }, 
+    },
   },
   {
     timestamps: true,

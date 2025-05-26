@@ -37,8 +37,8 @@ export const generateCheckoutSession = async (userId, lineItems, cart) => {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `{process.env.CLIENT_URL}/success-donate?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
+      success_url: `http://localhost:3000/api/donation/success-donate?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `http://localhost:3000/opportunities`,
       metadata: {
         userId: userId,
         orphanageId: userId,
@@ -156,6 +156,7 @@ export const fetchDonationsForOrphanage = async (orphanageId) => {
   return [...orphanDonations, ...campaignDonations];
 };
 
+// FIX: Move orphanageId filter after $lookup and $unwind
 const aggregateDonations = async (
   donationTypeRef,
   collectionName,
@@ -166,11 +167,7 @@ const aggregateDonations = async (
     "items.donationTypeRef": donationTypeRef,
   };
 
-  if (orphanageId) {
-    matchStage["recipient.orphanageId"] = mongoose.Types.ObjectId(orphanageId);
-  }
-
-  return await Donation.aggregate([
+  const pipeline = [
     { $match: matchStage },
     { $unwind: "$items" },
     { $match: { "items.donationTypeRef": donationTypeRef } },
@@ -183,18 +180,29 @@ const aggregateDonations = async (
       },
     },
     { $unwind: "$recipient" },
-    {
-      $project: {
-        orphanageId: "$recipient.orphanageId",
-        donationType: "$items.donationType",
-        amount: "$items.amount",
-        recipientId: "$recipient._id",
-        recipientName:
-          donationTypeRef === "Orphan" ? "$recipient.name" : "$recipient.title",
-        caseType: {
-          $literal: donationTypeRef === "Orphan" ? "Orphan" : "Campaign",
-        },
+  ];
+
+  if (orphanageId) {
+    pipeline.push({
+      $match: {
+        "recipient.orphanageId": new mongoose.Types.ObjectId(orphanageId),
+      },
+    });
+  }
+
+  pipeline.push({
+    $project: {
+      orphanageId: "$recipient.orphanageId",
+      donationType: "$items.donationType",
+      amount: "$items.amount",
+      recipientId: "$recipient._id",
+      recipientName:
+        donationTypeRef === "Orphan" ? "$recipient.name" : "$recipient.title",
+      caseType: {
+        $literal: donationTypeRef === "Orphan" ? "Orphan" : "Campaign",
       },
     },
-  ]);
+  });
+
+  return await Donation.aggregate(pipeline);
 };

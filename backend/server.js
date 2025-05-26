@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import MongoStore from "connect-mongo";
+import cors from "cors";
 import authRouter from "./routes/auth.routes.js";
 import userRouter from "./routes/user.routes.js";
 import orphanageRouter from "./routes/orphanage.routes.js";
@@ -24,9 +25,28 @@ app.get("/", (req, res) => res.render("homepage.ejs"));
 app.get("/login", (req, res) => res.render("login.ejs"));
 app.get("/signup", (req, res) => res.render("signup.ejs"));
 app.get("/opportunities", (req, res) => res.render("opportunities.ejs"));
-app.get("/orphanages", (req, res) => res.send("orphanages.ejs"));
+app.get("/orphanages", (req, res) => res.render("orphanages.ejs"));
+app.get("/orphanage", (req, res) => res.render("orphanage.ejs"));
 app.get("/cart", (req, res) => res.render("cart.ejs"));
 app.get("/case", (req, res) => res.render("case.ejs"));
+app.get("/success-donation", (req, res) => res.render("success-donation.ejs"));
+app.get("/dashboard", (req, res) => res.render("dashboard.ejs"));
+app.get("/dashboard/orphanages", (req, res) =>
+  res.render("orphanages/orphanages.ejs")
+);
+app.get("/orphanages/create", (req, res) =>
+  res.render("orphanages/orphanages.create.ejs")
+);
+app.get("/dashboard/orphans", (req, res) => res.render("orphans/orphans.ejs"));
+app.get("/orphans/create", (req, res) =>
+  res.render("orphans/orphans.create.ejs")
+);
+app.get("/dashboard/campaigns", (req, res) =>
+  res.render("campaigns/campaigns.ejs")
+);
+app.get("/campaigns/create", (req, res) =>
+  res.render("campaigns/campaigns.create.ejs")
+);
 
 // Middlewares
 app.use(express.static("frontend/public"));
@@ -47,6 +67,12 @@ app.use(
       httpOnly: isProduction, // Prevents client-side JavaScript access
       secure: false, // Set to true if using HTTPS
     },
+  })
+);
+app.use(
+  cors({
+    origin: "http://localhost:3000", // change to your frontend URL
+    credentials: true, // allow cookies to be sent
   })
 );
 app.use((req, res, next) => {

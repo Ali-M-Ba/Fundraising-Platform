@@ -21,3 +21,23 @@ export const renderByType = (type) => {
     console.warn(`Unsupported type: "${type}"`);
   }
 };
+
+export function setActiveButton(activeBtn, inactiveBtn) {
+  activeBtn.classList.remove(
+    "bg-gray-200",
+    "text-gray-700",
+    "hover:bg-gray-300"
+  );
+  activeBtn.classList.add("bg-green-600", "text-white", "hover:bg-green-700");
+
+  inactiveBtn.classList.remove(
+    "bg-green-600",
+    "text-white",
+    "hover:bg-green-700"
+  );
+  inactiveBtn.classList.add(
+    "bg-gray-200",
+    "text-gray-700",
+    "hover:bg-gray-300"
+  );
+}

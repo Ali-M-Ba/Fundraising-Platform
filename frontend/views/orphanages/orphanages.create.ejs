@@ -1,0 +1,24 @@
+<%- include('../partials/header'); -%>
+
+<section class="p-6 bg-gray-100 max-w-3xl mx-auto">
+  <h2 class="text-2xl font-bold mb-4">Create/Edit Orphanage</h2>
+  <form action="/orphanages" method="POST" class="space-y-4">
+    <input type="text" name="name" placeholder="Orphanage Name" class="w-full border p-2 rounded" required />
+    <input type="text" name="adminId" placeholder="Admin ID" class="w-full border p-2 rounded" required />
+
+    <div class="flex gap-4">
+      <input type="text" name="location[city]" placeholder="City" class="w-full border p-2 rounded" required />
+      <input type="text" name="location[country]" placeholder="Country" class="w-full border p-2 rounded" required />
+    </div>
+
+    <div class="flex gap-4">
+      <input type="email" name="contact[email]" placeholder="Email" class="w-full border p-2 rounded" required />
+      <input type="text" name="contact[phone]" placeholder="Phone" class="w-full border p-2 rounded" required />
+    </div>
+
+    <textarea name="description" placeholder="Description" class="w-full border p-2 rounded" required></textarea>
+    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Save</button>
+  </form>
+</section>
+
+<%- include('../partials/footer'); -%>

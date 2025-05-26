@@ -1,17 +1,21 @@
 import { createCampaignCard } from "../opportunities/campaign.card.js";
-import { showToast } from "../toast.js";
-import { fetchCampaigns } from "../opportunities/api.opportunities.js";
+import { fetchAndSumData } from "./homepage.utils.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const CardsContainer = document.getElementById("cards-container");
 
   try {
     try {
-      const { success, data, message } = await fetchCampaigns();
-      showToast(message, success ? "success" : "error");
-      CardsContainer.innerHTML = "";
+      const { totalCount, orphans, campaigns, counts } =
+        await fetchAndSumData();
 
-      data.campaigns.slice(0, 3).forEach((campaign) => {
+      document.getElementById("current-opportunities").innerText = totalCount;
+      document.getElementById("completed-opportunities").innerText =
+        counts.completedCampaigns;
+      document.getElementById("transactions").innerText = counts.donations;
+
+      CardsContainer.innerHTML = "";
+      campaigns.active.slice(0, 3).forEach((campaign) => {
         const card = createCampaignCard(campaign);
         CardsContainer.appendChild(card);
       });
@@ -23,3 +27,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error(err);
   }
 });
+

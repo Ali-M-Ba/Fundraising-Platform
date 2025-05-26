@@ -1,0 +1,20 @@
+<%- include('../partials/header'); -%>
+
+<section class="p-6 bg-gray-100 min-h-screen max-w-4xl mx-auto">
+  <h2 class="text-2xl font-bold mb-4">Orphans</h2>
+  <a href="/orphans/create" class="bg-indigo-600 text-white px-4 py-2 rounded mb-4 inline-block">Add Orphan</a>
+  <div class="grid gap-6">
+    <div class="bg-white p-6 rounded shadow-md border">
+      <h3 class="text-xl font-semibold mb-1">Orphan Name</h3>
+      <p class="text-sm text-gray-600 mb-1">ID: 123456789 | Age: 10 | Gender: Female</p>
+      <p class="mb-1">Health: Healthy | Sponsored: No</p>
+      <p class="mb-1 text-gray-600">City, Country</p>
+      <div class="mt-4 flex gap-4">
+        <a href="/orphans/1/edit" class="text-indigo-600 hover:underline">Edit</a>
+        <a href="/orphans/1/delete" class="text-red-600 hover:underline">Delete</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/footer'); -%>

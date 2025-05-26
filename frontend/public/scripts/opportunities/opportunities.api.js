@@ -14,7 +14,7 @@ export const addItemToCart = async ({
   donationTypeRef,
   amount,
 }) => {
-  return await fetch("/api/cart", {
+  const result = await fetch("/api/cart", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -26,4 +26,5 @@ export const addItemToCart = async ({
       amount,
     }),
   });
+  return await result.json();
 };

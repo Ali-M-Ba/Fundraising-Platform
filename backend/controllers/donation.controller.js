@@ -3,6 +3,7 @@ import { handleResponse } from "../utils/response.handler.js";
 import { handleError } from "../utils/error.handler.js";
 import Donation from "../models/Donation.model.js";
 import {
+  extractValidCartItems,
   findUserByAccessToken,
   syncCartWithValidItems,
 } from "../utils/cart.utils.js";
@@ -16,10 +17,24 @@ import {
   fetchDonationsForOrphanage,
   fetchDonationsGroupedByOrphanages,
 } from "../utils/donation.utils.js";
+import User from "../models/User.model.js";
+
+// export const getAllDonations = async (req, res) => {
+//   try {
+//     const donations = await fetchAllDonations();
+
+//     handleResponse(res, 200, "Donations retrieved successfully!", {
+//       donations,
+//     });
+//   } catch (error) {
+//     console.error("Error occurred fetching the donations: ", error);
+//     handleError(res, error);
+//   }
+// };
 
 export const getAllDonations = async (req, res) => {
   try {
-    const donations = await fetchAllDonations();
+    const donations = await Donation.find();
 
     handleResponse(res, 200, "Donations retrieved successfully!", {
       donations,
@@ -73,11 +88,18 @@ export const getAllDonationsForOrphanage = async (req, res) => {
 
 export const processDonation = async (req, res) => {
   try {
-    // const { paymentMethod } = req.body;
-    const user = await findUserByAccessToken(req.cookies.accessToken);
-    const { validCart, detailedCart } = await syncCartWithValidItems(user, req);
+    const { donationType, recipientId, donationTypeRef, amount } = req.body;
+    let validCart, detailedCart, user;
 
-    console.log(detailedCart);
+    if (donationType && recipientId && donationTypeRef && amount) {
+      ({ validCart, detailedCart } = await extractValidCartItems([
+        { donationType, recipientId, donationTypeRef, amount },
+      ]));
+    } else {
+      user = await findUserByAccessToken(req.cookies.accessToken);
+      ({ validCart, detailedCart } = await syncCartWithValidItems(user, req));
+    }
+
     const lineItems = calculateDonationSummary(detailedCart);
 
     const session = await generateCheckoutSession(
@@ -86,7 +108,6 @@ export const processDonation = async (req, res) => {
       validCart
     );
 
-    // res.redirect(303, session.url);
     handleResponse(res, 200, "Donation session created successfully!", {
       sessionId: session.id,
       sessionURL: session.url,
@@ -163,10 +184,19 @@ export const handleSuccessDonation = async (req, res) => {
       stripeSessionId: id,
       transactionStatus: payment_status,
     });
-
     await donation.save();
 
-    handleResponse(res, 200, "Successful donation!", { donation });
+    if (userId) {
+      const user = await User.findById(userId);
+      if (user) {
+        user.cart = [];
+        await user.save();
+      }
+    }
+    req.session.cart.length = 0;
+
+    res.redirect("/success-donation");
+    // handleResponse(res, 200, "Successful donation!", { donation });
   } catch (error) {
     console.log("Error occurred handling success donation: ", error);
     handleError(res, error);

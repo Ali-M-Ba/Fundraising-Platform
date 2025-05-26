@@ -2,7 +2,13 @@
 export const updateTotalAmount = (donationInputs, totalAmount) => {
   const updateTotal = () => {
     let total = 0;
-    donationInputs.forEach((input) => {
+    // Sum orphan result-values using data-amount
+    document.querySelectorAll(".result-value").forEach((el) => {
+      const val = parseFloat(el.dataset.amount);
+      if (!isNaN(val) && val > 0) total += val;
+    });
+    // Sum campaign input values
+    document.querySelectorAll(".donation-amount-input").forEach((input) => {
       const val = parseFloat(input.value);
       if (!isNaN(val) && val > 0) total += val;
     });
@@ -30,5 +36,14 @@ export const updateTotalAmount = (donationInputs, totalAmount) => {
       updateTotal();
     });
   });
+
+  // Listen for changes to orphan amount/total as well
+  document
+    .querySelectorAll(".amount-input, .decrement-btn, .increment-btn")
+    .forEach((el) => {
+      el.addEventListener("input", updateTotal);
+      el.addEventListener("click", updateTotal);
+    });
+
   updateTotal();
 };
