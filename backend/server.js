@@ -12,6 +12,7 @@ import orphanRouter from "./routes/orphan.routes.js";
 import campaignRouter from "./routes/campaign.routes.js";
 import cartRouter from "./routes/cart.routes.js";
 import donationRouter from "./routes/donation.routes.js";
+import { seedDatabase } from "./seed/data.seed.js";
 
 dotenv.config();
 
@@ -30,7 +31,7 @@ app.get("/orphanage", (req, res) => res.render("orphanage.ejs"));
 app.get("/cart", (req, res) => res.render("cart.ejs"));
 app.get("/case", (req, res) => res.render("case.ejs"));
 app.get("/success-donation", (req, res) => res.render("success-donation.ejs"));
-app.get("/dashboard", (req, res) => res.render("dashboard.ejs"));
+app.get("/admin-dashboard", (req, res) => res.render("admin.dashboard.ejs"));
 app.get("/dashboard/orphanages", (req, res) =>
   res.render("orphanages/orphanages.ejs")
 );
@@ -92,6 +93,7 @@ app.use("/api/donation", donationRouter);
 const startServer = async () => {
   try {
     await connectDB();
+    // await seedDatabase();
     app.listen(port, () => {
       console.log(`Server running on port ${port}`);
     });
