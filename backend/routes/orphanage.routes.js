@@ -22,7 +22,7 @@ router.put(
   "/:id",
   authenticate,
   authorize(["admin", "orphanage"]),
-  updateOrphanage
+  updateOrphanage,
 );
 
 export default router;

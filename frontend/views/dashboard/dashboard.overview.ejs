@@ -1,0 +1,91 @@
+<%- include('../partials/header'); -%>
+
+<!-- Sidebar/Main Layout -->
+<div class="flex bg-green-100">
+  <%- include('../partials/sidebar'); -%>
+
+  <!-- Main Content Area -->
+  <section class="m-4 ml-2 bg-white rounded-lg min-h-screen w-full space-y-4">
+    <!-- Top Bar -->
+    <header class="bg-gradient-to-r from-green-700 to-green-500 rounded-t-lg px-5 py-6">
+      <div>
+        <h1 class="text-2xl font-semibold text-white">Welcome, Admin</h1>
+        <p class="text-sm text-green-100 mt-1">
+          Here’s what’s happening in your dashboard today.
+        </p>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="p-4 bg-white">
+      <h2 class="text-4xl text-green-800 font-bold mb-6"> Overview</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Card: Total Campaigns -->
+        <div class="bg-gradient-to-r from-green-700 to-green-500 px-6 py-4 rounded-xl shadow-md ">
+          <div class="text-lg text-white font-semibold mb-4">Total Campaigns</div>
+          <div id="campaignsNumber" class="text-6xl text-white font-medium mb-2">0</div>
+          <a href="/dashboard/campaigns" class="text-yellow-200 inline-block hover:underline">Manage</a>
+        </div>
+        <!-- Card: Running Campaigns -->
+        <div class="bg-gradient-to-r from-green-700 to-green-500 px-6 py-4 rounded-xl shadow-md">
+          <div class="text-lg text-white font-semibold mb-2">Running Campaigns</div>
+          <div id="runningCampaignsNumber" class="text-6xl text-white font-medium">0</div>
+          <a href="/dashboard/campaigns" class="text-yellow-200 mt-2 inline-block hover:underline">Manage</a>
+        </div>
+        <!-- Card: Finished Campaigns -->
+        <div class="bg-gradient-to-r from-green-700 to-green-500 px-6 py-4 rounded-xl shadow-md">
+          <div class="text-lg text-white font-semibold mb-2">Finished Campaigns</div>
+          <div id="finishedCampaignsNumber" class="text-6xl text-white font-medium">0</div>
+          <a href="/dashboard/campaigns" class="text-yellow-200 mt-2 inline-block hover:underline">Manage</a>
+        </div>
+
+        <!-- Card: Orphanages -->
+        <div class="bg-white border-2 border-green-700 px-6 py-4 rounded-xl shadow-md">
+          <div class="text-lg text-green-800 font-semibold mb-3">Orphanages</div>
+          <div id="orphanagesNumber" class="text-6xl text-green-800 font-medium mb-2">0</div>
+          <a href="/dashboard/orphanages" class="text-green-800 inline-block hover:underline">Manage</a>
+        </div>
+
+        <!-- Card: Orphans (matched style) -->
+        <div class="bg-white border-2 border-green-700 px-6 py-4 rounded-xl shadow-md">
+          <div class="text-lg text-green-800 font-semibold mb-3">Orphans</div>
+          <div id="orphansNumber" class="text-6xl text-green-800 font-medium mb-2">0</div>
+          <a href="/dashboard/orphans" class="text-green-800 inline-block hover:underline">Manage</a>
+        </div>
+
+        <!-- Card: Total Sponsorships (matched style) -->
+        <div class="bg-white border-2 border-green-700 px-6 py-4 rounded-xl shadow-md">
+          <div class="text-lg text-green-800 font-semibold mb-3">Total Sponsorships</div>
+          <div id="sponsorshipsNumber" class="text-6xl text-green-800 font-medium mb-2">0</div>
+          <a href="/dashboard/donations" class="text-green-800 inline-block hover:underline">Manage</a>
+        </div>
+
+        <!-- Card: Number of Donations -->
+        <div class="bg-gradient-to-r from-green-700 to-yellow-600 px-6 py-4 rounded-xl shadow-md">
+          <div class="text-lg text-white font-semibold mb-4">Number of Donations</div>
+          <div id="donationsNumber" class="text-6xl text-white font-medium">0</div>
+          <a href="/dashboard/donations" class="text-yellow-200 mt-2 inline-block hover:underline">Manage</a>
+        </div>
+        <!-- Card: Total Donations -->
+        <div class="bg-gradient-to-r from-green-700 to-yellow-600 px-6 py-4 rounded-xl shadow-md">
+          <div class="text-lg text-white font-semibold mb-4">Total Donations</div>
+          <div id="totalDonationsAmount" class="text-6xl text-white font-medium">$0</div>
+          <a href="/dashboard/donations" class="text-yellow-200 mt-2 inline-block hover:underline">Manage</a>
+        </div>
+
+        <!-- Card: Total Users -->
+        <div class="border-2 border-yellow-600 bg-white px-6 py-4 rounded-xl shadow-md col-start-1">
+          <div class="text-lg text-yellow-800 font-semibold mb-4">Total Users</div>
+          <div id="usersNumber" class="text-6xl text-yellow-800 font-medium">0</div>
+          <a href="/dashboard/users" class="text-yellow-800 mt-2 inline-block hover:underline">Manage</a>
+        </div>
+
+      </div>
+    </main>
+  </section>
+</div>
+
+<script type="module" src="/scripts/dashboard/dashboard.overview.api.js"></script>
+
+
+<%- include('../partials/footer'); -%>

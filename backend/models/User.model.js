@@ -45,6 +45,9 @@ const userSchema = new Schema(
         type: String,
       },
     },
+    photos: {
+      type: [String],
+    },
     cart: [
       {
         donationType: {
@@ -72,7 +75,7 @@ const userSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 userSchema.pre("save", async function (next) {

@@ -1,0 +1,26 @@
+<%- include('../../partials/header'); -%>
+<!-- Sidebar/Main Layout -->
+
+<div class="flex bg-green-100">
+  <%- include('../../partials/sidebar'); -%>
+
+  <!-- Main Content Area -->
+  <section class="m-4 ml-2 bg-white min-h-screen space-y-2 w-full w-full rounded-lg shadow-lg">
+    <header class="bg-gradient-to-r from-green-700 to-green-500 rounded-t-lg px-5 py-6">
+      <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-semibold text-white">Orphanages</h2>
+        <a href="/dashboard/orphanages/create" class="text-lg font-semibold bg-white text-green-700 px-4 py-2 rounded-lg hover:shadow-lg">
+          + Add Orphanage
+        </a>
+      </div>
+    </header>
+
+    <!-- Orphanages Container -->
+    <div id="orphanagesContainer" class="flex flex-col space-y-4 p-4"></div>
+  </section>
+</div>
+
+<script type="module" src="/scripts/dashboard/orphanages/dashboard.orphanages.js">
+</script>
+
+<%- include('../../partials/footer'); -%>

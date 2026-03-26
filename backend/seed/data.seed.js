@@ -3,6 +3,7 @@ import User from "../models/User.model.js";
 import Orphanage from "../models/Orphanage.model.js";
 import Orphan from "../models/Orphan.model.js";
 import Campaign from "../models/Campaign.model.js";
+import bcrypt from "bcryptjs";
 
 const { Types } = mongoose;
 
@@ -192,7 +193,7 @@ const orphans = [
       country: "Careland",
     },
     needs: [{ category: "Food", amountNeeded: 120 }],
-    isSponsored: true,
+    isSponsored: false,
     bio: "Layla loves animals and dreams of being a veterinarian.",
     photos: [
       "https://images.pexels.com/photos/7911353/pexels-photo-7911353.jpeg?auto=compress&cs=tinysrgb&w=600",
@@ -291,7 +292,7 @@ const orphans = [
       country: "Peace Nation",
     },
     needs: [{ category: "Sports Equipment", amountNeeded: 70 }],
-    isSponsored: true,
+    isSponsored: false,
     bio: "Omar enjoys running and wants to be an athlete.",
     photos: [
       "https://images.pexels.com/photos/3932692/pexels-photo-3932692.jpeg?auto=compress&cs=tinysrgb&w=600",
@@ -516,8 +517,16 @@ export async function seedDatabase() {
 
     console.log("📥 Inserting new data...");
 
+    // Hash user passwords before inserting
+    const hashedUsers = await Promise.all(
+      users.map(async (user) => ({
+        ...user,
+        password: await bcrypt.hash(user.password, 10),
+      }))
+    );
+
     // Insert new data
-    await User.insertMany(users);
+    await User.insertMany(hashedUsers);
     await Orphanage.insertMany(orphanages);
     await Orphan.insertMany(orphans);
     await Campaign.insertMany(campaigns);

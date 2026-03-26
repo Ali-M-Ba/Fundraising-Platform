@@ -10,8 +10,8 @@ export const calculateDonationSummary = (cart) => {
 
     const images = isCampaign
       ? item.details?.images
-      : item.details?.photos ?? [];
-    const name = isCampaign ? item.details?.title : item.details?.name ?? "";
+      : (item.details?.photos ?? []);
+    const name = isCampaign ? item.details?.title : (item.details?.name ?? "");
     const amount = Math.round(item.amount * 100); // Convert to cents
 
     return {
@@ -57,7 +57,7 @@ export const updateItemsData = async (cart) => {
 
   for (const campaign of campaigns) {
     const match = cart.find(
-      (item) => item.recipientId === campaign._id.toString()
+      (item) => item.recipientId === campaign._id.toString(),
     );
     if (!match) continue;
 
@@ -70,7 +70,7 @@ export const updateItemsData = async (cart) => {
         ...(newAmountRaised >= campaign.targetAmount && {
           $set: { status: "completed" },
         }),
-      }
+      },
     );
   }
 };
@@ -127,7 +127,7 @@ export const fetchDonationsGroupedByOrphanages = async () => {
       acc[orphanageId].donations.push(donation);
       return acc;
     },
-    {}
+    {},
   );
 
   return Object.values(donations);
@@ -145,12 +145,12 @@ export const fetchDonationsForOrphanage = async (orphanageId) => {
   const orphanDonations = await aggregateDonations(
     "Orphan",
     "orphans",
-    orphanageId
+    orphanageId,
   );
   const campaignDonations = await aggregateDonations(
     "Campaign",
     "campaigns",
-    orphanageId
+    orphanageId,
   );
 
   return [...orphanDonations, ...campaignDonations];
@@ -160,7 +160,7 @@ export const fetchDonationsForOrphanage = async (orphanageId) => {
 const aggregateDonations = async (
   donationTypeRef,
   collectionName,
-  orphanageId = null
+  orphanageId = null,
 ) => {
   const matchStage = {
     transactionStatus: "paid",

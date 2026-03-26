@@ -12,42 +12,17 @@ import orphanRouter from "./routes/orphan.routes.js";
 import campaignRouter from "./routes/campaign.routes.js";
 import cartRouter from "./routes/cart.routes.js";
 import donationRouter from "./routes/donation.routes.js";
+import overviewRouter from "./routes/overview.routes.js";
+import pagesRouter from "./routes/pages.routes.js";
+import dashboardRouter from "./routes/dashboard.routes.js";
 import { seedDatabase } from "./seed/data.seed.js";
+import { authenticate } from "./middlewares/auth.middleware.js";
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 const isProduction = process.env.NODE_ENV === "production";
-
-// Set the views directory
-app.set("views", "frontend/views");
-app.get("/", (req, res) => res.render("homepage.ejs"));
-app.get("/login", (req, res) => res.render("login.ejs"));
-app.get("/signup", (req, res) => res.render("signup.ejs"));
-app.get("/opportunities", (req, res) => res.render("opportunities.ejs"));
-app.get("/orphanages", (req, res) => res.render("orphanages.ejs"));
-app.get("/orphanage", (req, res) => res.render("orphanage.ejs"));
-app.get("/cart", (req, res) => res.render("cart.ejs"));
-app.get("/case", (req, res) => res.render("case.ejs"));
-app.get("/success-donation", (req, res) => res.render("success-donation.ejs"));
-app.get("/admin-dashboard", (req, res) => res.render("admin.dashboard.ejs"));
-app.get("/dashboard/orphanages", (req, res) =>
-  res.render("orphanages/orphanages.ejs")
-);
-app.get("/orphanages/create", (req, res) =>
-  res.render("orphanages/orphanages.create.ejs")
-);
-app.get("/dashboard/orphans", (req, res) => res.render("orphans/orphans.ejs"));
-app.get("/orphans/create", (req, res) =>
-  res.render("orphans/orphans.create.ejs")
-);
-app.get("/dashboard/campaigns", (req, res) =>
-  res.render("campaigns/campaigns.ejs")
-);
-app.get("/campaigns/create", (req, res) =>
-  res.render("campaigns/campaigns.create.ejs")
-);
 
 // Middlewares
 app.use(express.static("frontend/public"));
@@ -68,13 +43,13 @@ app.use(
       httpOnly: isProduction, // Prevents client-side JavaScript access
       secure: false, // Set to true if using HTTPS
     },
-  })
+  }),
 );
 app.use(
   cors({
     origin: "http://localhost:3000", // change to your frontend URL
     credentials: true, // allow cookies to be sent
-  })
+  }),
 );
 app.use((req, res, next) => {
   if (!req.session.cart) {
@@ -89,11 +64,16 @@ app.use("/api/orphan", orphanRouter);
 app.use("/api/campaign", campaignRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/donation", donationRouter);
+app.use("/api/stats/overview", overviewRouter);
+app.use("/dashboard", dashboardRouter);
+app.use("/", pagesRouter);
+
+// Set the views directory
+app.set("views", "frontend/views");
 
 const startServer = async () => {
   try {
     await connectDB();
-    // await seedDatabase();
     app.listen(port, () => {
       console.log(`Server running on port ${port}`);
     });
