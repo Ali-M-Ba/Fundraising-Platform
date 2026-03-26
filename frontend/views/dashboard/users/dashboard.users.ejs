@@ -1,0 +1,38 @@
+<%- include('../../partials/header'); -%>
+
+<div class="flex bg-green-100">
+  <%- include('../../partials/sidebar'); -%>
+  <section class="m-4 ml-2 bg-white rounded-lg min-h-screen w-full ">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-green-700 to-green-500 rounded-t-lg px-5 py-6">
+      <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-semibold text-white">Users</h1>
+        <a href="/dashboard/users/create" class="text-lg font-semibold bg-white text-green-700 px-4 py-2 rounded-lg hover:shadow-lg">
+          + Add User
+        </a>
+      </div>
+    </header>
+
+
+    <!-- Users Container -->
+
+    <div class="relative p-4 space-y-3">
+      <div class="sticky top-0 z-10 grid grid-cols-[40px_2.6fr_2.4fr_1.6fr_1fr_2fr] items-center text-sm font-semibold text-gray-500 px-6 py-4 border bg-white">
+        <span>#</span>
+        <span>Name</span>
+        <span>Email</span>
+        <span>Phone</span>
+        <span>Role</span>
+        <span class="text-center">Actions</span>
+      </div>
+      <div id="usersContainer" class="flex flex-col space-y-2"></div>
+    </div>
+
+  </section>
+
+
+</div>
+
+<script type="module" src="/scripts/dashboard/users/dashboard.users.js"></script>
+
+<%- include('../../partials/footer'); -%>

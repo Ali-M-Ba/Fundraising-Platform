@@ -1,0 +1,33 @@
+<%- include('../../partials/header'); -%>
+
+<div class="flex bg-green-100">
+  <%- include('../../partials/sidebar'); -%>
+  <section class="m-4 ml-2 bg-white min-h-screen w-full ">
+    <header class="bg-gradient-to-r from-green-700 to-green-500 rounded-t-lg px-5 py-6">
+      <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-semibold text-white">Orphans</h2>
+        <a href="/dashboard/orphans/create" class="text-lg font-semibold bg-white text-green-700 px-4 py-2 rounded-lg hover:shadow-lg">
+          + Add Orphan
+        </a>
+      </div>
+    </header>
+    <div class="relative p-4 space-y-3">
+      <div class="sticky top-0 z-10 grid grid-cols-[60px_70px_1.5fr_1.5fr_80px_90px_120px_120px_140px]
+                items-center text-sm font-semibold text-gray-500
+                px-6 py-4 border bg-white">
+        <span>#</span>
+        <span>Photo</span>
+        <span>Name</span>
+        <span>Location</span>
+        <span>Age</span>
+        <span>Gender</span>
+        <span>Health</span>
+        <span>Sponsored</span>
+        <span class="text-center">Actions</span>
+      </div>
+      <div id="orphansContainer" class="flex flex-col space-y-2"></div>
+    </div>
+  </section>
+</div>
+<script type="module" src="/scripts/dashboard/orphans/dashboard.orphans.js"></script>
+<%- include('../../partials/footer'); -%>

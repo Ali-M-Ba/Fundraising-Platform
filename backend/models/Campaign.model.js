@@ -14,7 +14,7 @@ const campaignSchema = new Schema(
       required: [true, "Description is required."],
       trim: true,
     },
-    Beneficiaries: {
+    beneficiaries: {
       type: Number,
       required: [true, "Beneficiaries is required."],
       min: [1, "Beneficiaries must be at least 1."],

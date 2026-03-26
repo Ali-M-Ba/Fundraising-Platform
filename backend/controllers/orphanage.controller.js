@@ -37,7 +37,6 @@ export const getOrphanage = async (req, res) => {
 export const createOrphanage = async (req, res) => {
   try {
     const orphanageData = req.body;
-
     const orphanage = new Orphanage(orphanageData);
     await orphanage.save();
 
@@ -62,7 +61,7 @@ export const updateOrphanage = async (req, res) => {
       orphanageData,
       {
         new: true,
-      }
+      },
     ).lean();
     if (!orphanage) throw { status: 404, message: "Orphanage doesn't exist." };
 

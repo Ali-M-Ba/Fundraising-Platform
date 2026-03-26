@@ -1,0 +1,85 @@
+<%- include('../../partials/header'); -%>
+
+
+<div class="flex bg-green-100">
+  <%- include('../../partials/sidebar'); -%>
+
+  <section class="m-4 ml-2 bg-white w-full">
+    <header class="bg-gradient-to-r from-green-700 to-green-500 rounded-t-lg px-5 py-6 mb-8">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-semibold text-white">Edit Orphanage</h2>
+        <p class="text-green-100 mt-1">
+          Please provide the details for the orphanage facility.
+        </p>
+      </div>
+    </header>
+    <div class="max-w-4xl mx-auto">
+
+
+      <form class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-1">
+            <label for="name" class="block text-sm font-semibold text-gray-700">Orphanage Name</label>
+            <input type="text" id="name" name="name" placeholder="e.g. Sunshine Home" class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" required />
+          </div>
+
+          <div class="space-y-1">
+            <label for="adminId" class="block text-sm font-semibold text-gray-700">Admin ID</label>
+            <input type="text" id="adminId" name="adminId" placeholder="ADM-12345" class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" required />
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-gray-100">
+          <h3 class="text-lg font-medium text-gray-800 mb-4">Location Details</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label for="country" class="block text-sm font-medium text-gray-600">Country</label>
+              <input type="text" id="country" name="location-country" placeholder="Country" class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" required />
+            </div>
+            <div class="space-y-1">
+              <label for="city" class="block text-sm font-medium text-gray-600">City</label>
+              <input type="text" id="city" name="location-city" placeholder="City" class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" required />
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-gray-100">
+          <h3 class="text-lg font-medium text-gray-800 mb-4">Contact Information</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label for="email" class="block text-sm font-medium text-gray-600">Email Address</label>
+              <input type="email" id="email" name="contact-email" placeholder="contact@orphanage.org" class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" required />
+            </div>
+            <div class="space-y-1">
+              <label for="phone" class="block text-sm font-medium text-gray-600">Phone Number</label>
+              <input type="tel" id="phone" name="contact-phone" placeholder="+1 (555) 000-0000" class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all" required />
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-1 pt-4 border-t border-gray-100">
+          <label for="description" class="block text-sm font-semibold text-gray-700">About the Orphanage</label>
+          <textarea id="description" name="description" rows="4" placeholder="Briefly describe the mission and facilities..." class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all resize-none" required></textarea>
+        </div>
+
+
+        <!-- Images -->
+        <div class="space-y-1 pt-4 border-t border-gray-100">
+          <label class="block text-sm font-semibold text-gray-700">Profile Images</label>
+          <input type="file" name="photos" multiple class="w-full border border-gray-300 p-2 rounded-lg bg-white" />
+        </div>
+
+
+        <div class="flex justify-end pt-6">
+          <button type="button" class="px-3 py-1 text-gray-600 font-medium mr-4 hover:underline">Cancel</button>
+          <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all transform active:scale-95">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+
+<script type="module" src="/scripts/dashboard/orphanages/dashboard.orphanages.edit.js"></script>
+<%- include('../../partials/footer'); -%>

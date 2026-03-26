@@ -16,11 +16,6 @@ router.get("/:id", getOrphan);
 // Only Orphanage allowed to create, update, or delete orphans
 router.post("/", authenticate, authorize(["orphanage"]), createOrphan);
 router.delete("/:id", authenticate, authorize(["orphanage"]), deleteOrphan);
-router.put(
-  "/:id",
-  authenticate,
-  authorize(["orphanage"]),
-  updateOrphan
-);
+router.put("/:id", authenticate, authorize(["orphanage"]), updateOrphan);
 
 export default router;

@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import MongoStore from "connect-mongo";
+import cors from "cors";
 import authRouter from "./routes/auth.routes.js";
 import userRouter from "./routes/user.routes.js";
 import orphanageRouter from "./routes/orphanage.routes.js";
@@ -11,6 +12,11 @@ import orphanRouter from "./routes/orphan.routes.js";
 import campaignRouter from "./routes/campaign.routes.js";
 import cartRouter from "./routes/cart.routes.js";
 import donationRouter from "./routes/donation.routes.js";
+import overviewRouter from "./routes/overview.routes.js";
+import pagesRouter from "./routes/pages.routes.js";
+import dashboardRouter from "./routes/dashboard.routes.js";
+import { seedDatabase } from "./seed/data.seed.js";
+import { authenticate } from "./middlewares/auth.middleware.js";
 
 dotenv.config();
 
@@ -19,6 +25,7 @@ const port = process.env.PORT || 3000;
 const isProduction = process.env.NODE_ENV === "production";
 
 // Middlewares
+app.use(express.static("frontend/public"));
 app.use(express.json());
 app.use(cookieParser());
 app.use(
@@ -36,7 +43,13 @@ app.use(
       httpOnly: isProduction, // Prevents client-side JavaScript access
       secure: false, // Set to true if using HTTPS
     },
-  })
+  }),
+);
+app.use(
+  cors({
+    origin: "http://localhost:3000", // change to your frontend URL
+    credentials: true, // allow cookies to be sent
+  }),
 );
 app.use((req, res, next) => {
   if (!req.session.cart) {
@@ -44,13 +57,19 @@ app.use((req, res, next) => {
   }
   next();
 });
-app.use("/user", userRouter);
-app.use("/auth", authRouter);
-app.use("/orphanage", orphanageRouter);
-app.use("/orphan", orphanRouter);
-app.use("/campaign", campaignRouter);
-app.use("/cart", cartRouter);
-app.use("/donation", donationRouter);
+app.use("/api/user", userRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/orphanage", orphanageRouter);
+app.use("/api/orphan", orphanRouter);
+app.use("/api/campaign", campaignRouter);
+app.use("/api/cart", cartRouter);
+app.use("/api/donation", donationRouter);
+app.use("/api/stats/overview", overviewRouter);
+app.use("/dashboard", dashboardRouter);
+app.use("/", pagesRouter);
+
+// Set the views directory
+app.set("views", "frontend/views");
 
 const startServer = async () => {
   try {

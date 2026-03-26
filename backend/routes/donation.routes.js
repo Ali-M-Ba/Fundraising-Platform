@@ -12,34 +12,35 @@ import {
 const router = express.Router();
 
 // Admin: Get all donations
-router.get("/", authenticate, authorize(["admin"]), getAllDonations);
+// router.get("/", authenticate, authorize(["admin"]), getAllDonations);
+router.get("/", getAllDonations);
 
 // User: Get donations by user ID
 router.get(
   "/user/:id",
-  authenticate,
-  authorize(["admin", "orphanage", "donor"]),
+  // authenticate,
+  // authorize(["admin", "orphanage", "donor"]),
   getAllDonationsByUserId
 );
 
 // Admin: Get all donations received by orphanages
 router.get(
   "/orphanages",
-  authenticate,
-  authorize(["admin"]),
+  // authenticate,
+  // authorize(["admin"]),
   getAllDonationsGroupedByOrphanages
 );
 
 // Orphanage-specific: Get donations for a specific orphanage
 router.get(
   "/orphanages/:id",
-  authenticate,
-  authorize(["orphanage"]),
+  // authenticate,
+  // authorize(["orphanage"]),
   getAllDonationsForOrphanage
 );
 
 // You don't have to be authenticated or authorized to donate
 router.post("/donate", processDonation);
-router.post("/success-donate", handleSuccessDonation);
+router.get("/success-donate", handleSuccessDonation);
 
 export default router;

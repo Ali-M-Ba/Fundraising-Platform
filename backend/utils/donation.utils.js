@@ -10,8 +10,8 @@ export const calculateDonationSummary = (cart) => {
 
     const images = isCampaign
       ? item.details?.images
-      : item.details?.photos ?? [];
-    const name = isCampaign ? item.details?.title : item.details?.name ?? "";
+      : (item.details?.photos ?? []);
+    const name = isCampaign ? item.details?.title : (item.details?.name ?? "");
     const amount = Math.round(item.amount * 100); // Convert to cents
 
     return {
@@ -37,8 +37,8 @@ export const generateCheckoutSession = async (userId, lineItems, cart) => {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `{process.env.CLIENT_URL}/success-donate?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
+      success_url: `http://localhost:3000/api/donation/success-donate?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `http://localhost:3000/opportunities`,
       metadata: {
         userId: userId,
         orphanageId: userId,
@@ -57,7 +57,7 @@ export const updateItemsData = async (cart) => {
 
   for (const campaign of campaigns) {
     const match = cart.find(
-      (item) => item.recipientId === campaign._id.toString()
+      (item) => item.recipientId === campaign._id.toString(),
     );
     if (!match) continue;
 
@@ -70,7 +70,7 @@ export const updateItemsData = async (cart) => {
         ...(newAmountRaised >= campaign.targetAmount && {
           $set: { status: "completed" },
         }),
-      }
+      },
     );
   }
 };
@@ -127,7 +127,7 @@ export const fetchDonationsGroupedByOrphanages = async () => {
       acc[orphanageId].donations.push(donation);
       return acc;
     },
-    {}
+    {},
   );
 
   return Object.values(donations);
@@ -145,32 +145,29 @@ export const fetchDonationsForOrphanage = async (orphanageId) => {
   const orphanDonations = await aggregateDonations(
     "Orphan",
     "orphans",
-    orphanageId
+    orphanageId,
   );
   const campaignDonations = await aggregateDonations(
     "Campaign",
     "campaigns",
-    orphanageId
+    orphanageId,
   );
 
   return [...orphanDonations, ...campaignDonations];
 };
 
+// FIX: Move orphanageId filter after $lookup and $unwind
 const aggregateDonations = async (
   donationTypeRef,
   collectionName,
-  orphanageId = null
+  orphanageId = null,
 ) => {
   const matchStage = {
     transactionStatus: "paid",
     "items.donationTypeRef": donationTypeRef,
   };
 
-  if (orphanageId) {
-    matchStage["recipient.orphanageId"] = mongoose.Types.ObjectId(orphanageId);
-  }
-
-  return await Donation.aggregate([
+  const pipeline = [
     { $match: matchStage },
     { $unwind: "$items" },
     { $match: { "items.donationTypeRef": donationTypeRef } },
@@ -183,18 +180,29 @@ const aggregateDonations = async (
       },
     },
     { $unwind: "$recipient" },
-    {
-      $project: {
-        orphanageId: "$recipient.orphanageId",
-        donationType: "$items.donationType",
-        amount: "$items.amount",
-        recipientId: "$recipient._id",
-        recipientName:
-          donationTypeRef === "Orphan" ? "$recipient.name" : "$recipient.title",
-        caseType: {
-          $literal: donationTypeRef === "Orphan" ? "Orphan" : "Campaign",
-        },
+  ];
+
+  if (orphanageId) {
+    pipeline.push({
+      $match: {
+        "recipient.orphanageId": new mongoose.Types.ObjectId(orphanageId),
+      },
+    });
+  }
+
+  pipeline.push({
+    $project: {
+      orphanageId: "$recipient.orphanageId",
+      donationType: "$items.donationType",
+      amount: "$items.amount",
+      recipientId: "$recipient._id",
+      recipientName:
+        donationTypeRef === "Orphan" ? "$recipient.name" : "$recipient.title",
+      caseType: {
+        $literal: donationTypeRef === "Orphan" ? "Orphan" : "Campaign",
       },
     },
-  ]);
+  });
+
+  return await Donation.aggregate(pipeline);
 };

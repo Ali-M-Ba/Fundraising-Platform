@@ -44,6 +44,9 @@ const orphanageSchema = new Schema(
       required: [true, "Description is required."],
       trim: true,
     },
+    images: {
+      type: [String],
+    },
   },
   { timestamps: true }
 );

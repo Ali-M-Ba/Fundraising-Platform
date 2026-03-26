@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Donation Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url("https://fonts.cdnfonts.com/css/poppins");
+
+    body {
+      font-family: "Poppins", sans-serif;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-neutral-100">
+  <nav class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <a href="/" class="text-2xl font-bold text-green-700">Donation Platform</a>
+
+        <!-- Desktop Menu -->
+        <div class="hidden md:flex items-center space-x-6">
+          <a href="/" class="text-gray-700 hover:text-green-700">Home</a>
+
+          <!-- Dropdown Container -->
+          <div class="relative" id="dropdown-container">
+            <button class="text-gray-700 hover:text-green-700" id="dropdown-button">
+              Donation Opportunities
+            </button>
+            <div id="dropdown-menu" class="fixed left-0 right-0 top-16 z-50 mt-0 hidden bg-white text-gray-700 shadow-lg border-b border-green-700 rounded-none flex justify-center">
+              <div class="flex gap-4 py-4">
+                <a href="/opportunities?type=campaigns" class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded hover:bg-green-600 hover:text-white transition">Campaigns</a>
+                <a href="/opportunities?type=orphans" class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded hover:bg-green-600 hover:text-white transition">Orphans</a>
+              </div>
+            </div>
+          </div>
+
+          <a href="/orphanages" class="text-gray-700 hover:text-green-700">Orphanages</a>
+          <a href="/cart" class="text-gray-700 hover:text-green-700">Cart</a>
+        </div>
+
+        <!-- Login/Logout Button -->
+        <div class="hidden md:block">
+          <a href="/login" id="desktop-login" class="text-white bg-green-600 hover:bg-green-700 font-medium px-6 py-2 rounded-full shadow-md">Login</a>
+          <button id="desktop-logout" class="text-white bg-red-600 hover:bg-red-700 font-medium px-6 py-2 rounded-full shadow-md" style="display:none;">Logout</button>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden">
+          <button id="mobile-menu-button" class="text-gray-700 hover:text-green-700 focus:outline-none">
+            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden px-4 pb-4 bg-white shadow-md">
+      <a href="/" class="block px-4 py-2 text-gray-700 hover:bg-green-50 rounded">Home</a>
+      <div>
+        <button id="mobile-dropdown-btn" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-green-50 rounded">Donation Opportunities</button>
+        <div id="mobile-dropdown-menu" class="hidden pl-4">
+          <a href="/opportunities?type=campaigns" class="block px-4 py-2 text-gray-700 hover:bg-green-50 rounded">Campaigns</a>
+          <a href="/opportunities?type=orphans" class="block px-4 py-2 text-gray-700 hover:bg-green-50 rounded">Orphans</a>
+        </div>
+      </div>
+      <a href="/orphanages" class="block px-4 py-2 text-gray-700 hover:bg-green-50 rounded">Orphanages</a>
+      <a href="/cart" class="block px-4 py-2 text-gray-700 hover:bg-green-50 rounded">Cart</a>
+      <a href="/donations" class="block px-4 py-2 text-gray-700 hover:bg-green-50 rounded">Donations</a>
+      <a href="/login" id="mobile-login" class="block px-4 py-2 text-gray-700 hover:bg-green-50 rounded">Login</a>
+      <button id="mobile-logout" class="block px-4 py-2 text-red-700 hover:bg-red-50 rounded" style="display:none;">Logout</button>
+    </div>
+  </nav>
+
+  <script>
+    // Mobile menu toggle
+    const mobileMenuButton = document.getElementById("mobile-menu-button");
+    const mobileMenu = document.getElementById("mobile-menu");
+
+    mobileMenuButton.addEventListener("click", () => {
+      mobileMenu.classList.toggle("hidden");
+    });
+
+    // Mobile dropdown toggle
+    const mobileDropdownBtn = document.getElementById("mobile-dropdown-btn");
+    const mobileDropdownMenu = document.getElementById("mobile-dropdown-menu");
+
+    mobileDropdownBtn.addEventListener("click", () => {
+      mobileDropdownMenu.classList.toggle("hidden");
+    });
+
+    // Desktop dropdown hover handler (prevents flicker)
+    const dropdownContainer = document.getElementById("dropdown-container");
+    const dropdownMenu = document.getElementById("dropdown-menu");
+
+    let dropdownTimeout;
+
+    dropdownContainer.addEventListener("mouseenter", () => {
+      clearTimeout(dropdownTimeout);
+      dropdownMenu.classList.remove("hidden");
+    });
+
+    dropdownContainer.addEventListener("mouseleave", () => {
+      dropdownTimeout = setTimeout(() => {
+        dropdownMenu.classList.add("hidden");
+      }, 200); // delay to allow cursor movement
+    });
+
+    function isLoggedIn() {
+      return document.cookie.split(';').some((item) => item.trim().startsWith('accessToken='));
+    }
+
+    function updateAuthUI() {
+      const loggedIn = isLoggedIn();
+      // Desktop
+      document.getElementById('desktop-login').style.display = loggedIn ? 'none' : 'inline-block';
+      document.getElementById('desktop-logout').style.display = loggedIn ? 'inline-block' : 'none';
+      // Mobile
+      document.getElementById('mobile-login').style.display = loggedIn ? 'none' : 'block';
+      document.getElementById('mobile-logout').style.display = loggedIn ? 'block' : 'none';
+    }
+
+    updateAuthUI();
+
+    // Logout handler
+    function handleLogout() {
+      fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include'
+        })
+        .then(() => {
+          updateAuthUI();
+          window.location.href = '/login';
+        });
+    }
+    document.getElementById('desktop-logout').addEventListener('click', handleLogout);
+    document.getElementById('mobile-logout').addEventListener('click', handleLogout);
+  </script>

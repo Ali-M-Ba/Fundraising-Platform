@@ -1,0 +1,87 @@
+<%- include('../../partials/header'); -%>
+
+<div class="flex bg-green-100">
+  <%- include('../../partials/sidebar'); -%>
+
+  <section class="m-4 ml-2 bg-white w-full">
+    <header class="bg-gradient-to-r from-green-700 to-green-500 rounded-t-lg px-5 py-6 mb-8">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-semibold text-white">Create User</h2>
+        <p class="text-green-100 mt-1">
+          Enter user account details.
+        </p>
+      </div>
+    </header>
+
+    <section class="max-w-4xl mx-auto">
+      <form class="space-y-6">
+
+        <!-- Basic Info -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <div class="space-y-1">
+            <label class="block text-sm font-semibold text-gray-700">Full Name</label>
+            <input type="text" name="fullName" required class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+          </div>
+
+          <div class="space-y-1">
+            <label class="block text-sm font-semibold text-gray-700">Email</label>
+            <input type="email" name="email" required class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+          </div>
+
+          <div class="space-y-1">
+            <label class="block text-sm font-semibold text-gray-700">Password</label>
+            <input type="password" name="password" minlength="8" required class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+          </div>
+
+          <div class="space-y-1">
+            <label class="block text-sm font-semibold text-gray-700">Phone</label>
+            <input type="text" name="phone" required placeholder="+123456789" class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+          </div>
+
+        </div>
+
+        <!-- Role -->
+        <div class="space-y-1">
+          <label class="block text-sm font-semibold text-gray-700">Role</label>
+          <select name="role" class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+            <option value="donor">Donor</option>
+            <option value="orphanage">Orphanage</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <!-- Address -->
+        <div class="pt-4 border-t border-gray-100">
+          <h3 class="text-lg font-medium text-gray-800 mb-4">Address</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            <input type="text" name="address-street" placeholder="Street" class="border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+
+            <input type="text" name="address-city" placeholder="City" class="border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+
+            <input type="text" name="address-country" placeholder="Country" class="border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" />
+
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-end pt-6">
+          <button type="reset" class="px-3 py-1 text-gray-600 font-medium mr-4 hover:underline">
+            Cancel
+          </button>
+
+          <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all active:scale-95">
+            Create User
+          </button>
+        </div>
+
+      </form>
+    </section>
+  </section>
+</div>
+
+<script type="module" src="/scripts/dashboard/users/dashboard.users.create.js"></script>
+
+<%- include('../../partials/footer'); -%>

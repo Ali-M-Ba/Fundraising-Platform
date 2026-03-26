@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import User from "../models/User.model.js";
 import { handleError } from "../utils/error.handler.js";
 import { handleResponse } from "../utils/response.handler.js";
@@ -5,7 +6,7 @@ import { handleResponse } from "../utils/response.handler.js";
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select("-password");
-    handleResponse(res, 400, "Users retrieved successfully!", { users });
+    handleResponse(res, 200, "Users retrieved successfully!", { users });
   } catch (error) {
     console.error("Error fetching users: ", error);
     handleError(res, error);
@@ -22,6 +23,19 @@ export const getUser = async (req, res) => {
   }
 };
 
+export const createUser = async (req, res) => {
+  try {
+    const userData = req.body;
+    const user = await User.create(userData);
+    const userObj = user.toObject();
+    delete userObj.password;
+    handleResponse(res, 201, "User created successfully!", { user: userObj });
+  } catch (error) {
+    console.error("Error creating user: ", error);
+    handleError(res, error);
+  }
+};
+
 export const updateProfile = async (req, res) => {
   try {
     const userData = req.body;
@@ -32,7 +46,7 @@ export const updateProfile = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(userId, userData, {
       new: true,
     }).select("-password");
-    handleResponse(res, 400, "User updated successfully!", { updatedUser });
+    handleResponse(res, 200, "User updated successfully!", { updatedUser });
   } catch (error) {
     console.error("Error updating user: ", error);
     handleError(res, error);
@@ -50,22 +64,15 @@ export const deleteUser = async (req, res) => {
       throw { status: 404, message: "User not found." };
     }
 
-    const adminRole = req.user.role; // "admin" or "orphanage"
+    const adminRole = req.user.role;
 
-    if (adminRole === "admin") {
-      if (user.role !== "orphanage") {
-        throw {
-          status: 401,
-          message: `${adminRole} cannot delete ${user.role}.`,
-        };
-      }
-    } else {
-      if (user.role !== "orphan") {
-        throw {
-          status: 401,
-          message: `${adminRole} cannot delete ${user.role}.`,
-        };
-      }
+    // Only the Admin can delete users, whether "donor", or "orphanage"
+    // Admin cannot delete itself
+    if (adminRole !== "admin" || user.role === "admin") {
+      throw {
+        status: 401,
+        message: `${adminRole} cannot delete ${user.role}.`,
+      };
     }
 
     const deletedUser = user.toObject(); // Store user info before deletion

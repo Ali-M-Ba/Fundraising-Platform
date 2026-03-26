@@ -1,0 +1,91 @@
+<%- include('../../partials/header'); -%>
+
+<div class="flex bg-green-100">
+  <%- include('../../partials/sidebar'); -%>
+  <section class="m-4 ml-2 bg-white rounded-lg min-h-screen w-full">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-green-700 to-green-500 rounded-t-lg px-5 py-6">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="text-2xl font-semibold text-white">Donation History</h2>
+          <p class="text-sm text-green-100 mt-1">
+            Track and manage all incoming contributions.
+          </p>
+        </div>
+      </div>
+    </header>
+
+
+    <!-- Sponsorship Cards Container -->
+    <div class="flex flex-col p-4 space-y-4">
+      <!-- Sponsorship Card -->
+      <div class="rounded-xl border shadow-sm hover:shadow-md transition p-4">
+
+        <div class="flex items-center gap-6">
+          <!-- Date -->
+          <div class="text-gray-400 text-sm pr-4 border-r text-center min-w-[80px]">
+            <span class="block font-bold text-gray-900">24</span>
+            Jan 2026
+          </div>
+
+          <!-- Donation Info -->
+          <div class="min-w-[200px]">
+            <div class="flex items-center gap-2 mb-1">
+              <h3 class="text-lg font-semibold text-gray-900">
+                ${donation.totalAmount} USD
+              </h3>
+              <span class="px-2 py-0.5 text-[10px] uppercase font-bold rounded-full bg-green-100 text-green-700">
+                Paid
+              </span>
+            </div>
+            <p class="text-xs text-gray-500 truncate w-40">
+              ID: #ORD-9928374
+            </p>
+            <div class="mt-2">
+              <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                💳 Card
+              </span>
+            </div>
+          </div>
+
+          <!-- Donations Details -->
+          <div class="flex-1 w-full">
+            <div class="grid grid-cols-1 gap-2">
+              <div class="flex justify-between items-center bg-gray-50 p-2 border-l-4 border-green-600">
+                <div>
+                  <p class="text-[10px] font-bold text-green-700 uppercase leading-none mb-1">Campaign</p>
+                  <p class="text-sm text-gray-800 truncate">Clean Water for Gaza</p>
+                </div>
+                <span class="text-sm text-gray-900">$100.00</span>
+              </div>
+
+              <div class="flex justify-between items-center bg-gray-50 p-2 border-l-4 border-blue-600">
+                <div>
+                  <p class="text-[10px] font-bold text-blue-700 uppercase leading-none mb-1">Orphan</p>
+                  <p class="text-sm text-gray-800 truncate">Sponsorship #ID-992</p>
+                </div>
+                <span class="text-sm text-gray-900">$50.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Donation Actions -->
+          <div class="pl-6 border-l flex flex-col gap-2">
+            <button class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition">
+              View Receipt
+            </button>
+            <button class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition">
+              Details
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+</div>
+
+<%- include('../../partials/footer'); -%>

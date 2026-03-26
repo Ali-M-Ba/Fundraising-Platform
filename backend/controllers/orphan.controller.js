@@ -37,12 +37,12 @@ export const getOrphan = async (req, res) => {
 export const createOrphan = async (req, res) => {
   try {
     const orphanData = req.body;
+    const orphans = Array.isArray(orphanData) ? orphanData : [orphanData];
 
-    const orphan = new Orphan(orphanData);
-    await orphan.save();
+    const savedOrphans = await Orphan.insertMany(orphans);
 
     handleResponse(res, 201, "Orphan created successfully!", {
-      orphan,
+      orphans: savedOrphans,
     });
   } catch (error) {
     console.log("Error creating new orphan: ", error);
